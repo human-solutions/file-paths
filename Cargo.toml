@@ -5,7 +5,12 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+strict = []
+
 [dependencies]
+anyhow = "1.0"
+dirs-sys = "0.4"
 
 [dev-dependencies]
 markdown-includes = "0.1"
