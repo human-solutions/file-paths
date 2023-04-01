@@ -1,6 +1,9 @@
 <!-- 
 Please don't edit. This document has been generated from src/readme.tpl.md
 --> 
+# X-Path
+
+- [X-Path](#x-path)
 - [Use cases](#use-cases)
     - [Config files](#config-files)
     - [Clear expectations](#clear-expectations)
