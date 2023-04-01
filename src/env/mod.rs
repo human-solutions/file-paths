@@ -1,9 +1,16 @@
+#![allow(unused_imports)]
+
 use anyhow::Result;
 
 #[cfg(unix)]
 mod nix;
 #[cfg(target_os = "windows")]
 mod win;
+
+#[cfg(unix)]
+use nix as dir;
+#[cfg(target_os = "windows")]
+use win as dir;
 
 #[cfg(not(test))]
 use crate::ext::PathBufExt;
@@ -17,7 +24,7 @@ pub(crate) fn current_dir() -> Result<String> {
 
 pub(crate) fn home_dir() -> Result<String> {
     #[cfg(not(test))]
-    return Ok(nix::home_dir()
+    return Ok(dir::home_dir()
         .ok_or(anyhow::anyhow!(
             "could not resolve the user's home directory"
         ))?
