@@ -13,7 +13,7 @@
 //!
 //! ```toml
 //! dir1 = "~/mydir/${SOME_ENV}/../"
-//! dir2 = "c:\anotherdir\\\%ANOTHER_ENV%"
+//! dir2 = "c:\\anotherdir\\%ANOTHER_ENV%"
 //! ```
 //!
 //! ## Clear expectations

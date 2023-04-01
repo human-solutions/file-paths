@@ -1,8 +1,6 @@
 <!-- 
 Please don't edit. This document has been generated from src/readme.tpl.md
 --> 
-<div style="font-size:4rem;text-align: center;">X-Path</div>
-
 - [Use cases](#use-cases)
     - [Config files](#config-files)
     - [Clear expectations](#clear-expectations)
@@ -35,7 +33,7 @@ and have environment variables resolved at load.
 
 ```toml
 dir1 = "~/mydir/${SOME_ENV}/../"
-dir2 = "c:\anotherdir\\\%ANOTHER_ENV%"
+dir2 = "c:\\anotherdir\\%ANOTHER_ENV%"
 ```
 
 ## Clear expectations

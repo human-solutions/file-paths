@@ -4,6 +4,8 @@ use std::os::windows::ffi::OsStringExt;
 use std::path::PathBuf;
 use std::slice;
 
+use windows_sys as windows;
+
 use windows::Win32;
 use windows::Win32::UI::Shell;
 
