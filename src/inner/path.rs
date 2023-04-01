@@ -16,6 +16,12 @@ pub(crate) struct PathInner {
     pub(crate) is_absolute: bool,
 }
 
+impl AsRef<Path> for PathInner {
+    fn as_ref(&self) -> &Path {
+        Path::new(&self.path)
+    }
+}
+
 impl PathInner {
     pub(crate) fn empty() -> Self {
         Self {

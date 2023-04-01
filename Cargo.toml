@@ -1,7 +1,11 @@
 [package]
-name = "file-paths"
-version = "0.1.0"
+name = "x-path"
+version = "0.1.0-alpha.0"
 edition = "2021"
+license = "MIT"
+repository = "https://github.com/human-solutions/cross-path"
+description = "x-path is a if-it-compiles-it-works solution for safe Rust paths with abs/rel and file/dir variants for API safety and cross platform support"
+categories = ["filesystem", "config"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -10,7 +14,18 @@ strict = []
 
 [dependencies]
 anyhow = "1.0"
-dirs-sys = "0.4"
 
 [dev-dependencies]
 markdown-includes = "0.1"
+
+[target."cfg(unix)".dependencies.libc]
+version = "0.2"
+
+[target."cfg(windows)".dependencies.windows-sys]
+version = "0.45.0"
+features = [
+    "Win32_UI_Shell",
+    "Win32_Foundation",
+    "Win32_Globalization",
+    "Win32_System_Com",
+]

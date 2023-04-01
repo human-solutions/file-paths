@@ -2,7 +2,11 @@ use std::borrow::Cow;
 
 use anyhow::{ensure, Context, Result};
 
-use crate::{ext::CharExt, SEP, SLASH};
+use crate::{
+    env::{current_dir, env_var, home_dir},
+    ext::CharExt,
+    SEP, SLASH,
+};
 
 enum Start {
     Home,
@@ -100,40 +104,6 @@ fn prefix_home_dir<'a>(path: &'a str) -> Result<Cow<'a, str>> {
     }
     home.extend(path.chars());
     Ok(Cow::Owned(home))
-}
-
-#[cfg(not(test))]
-use crate::ext::PathBufExt;
-
-fn current_dir() -> Result<String> {
-    #[cfg(not(test))]
-    return Ok(std::env::current_dir()?.try_to_string()?);
-    #[cfg(test)]
-    Ok(String::from("/var/test"))
-}
-
-fn home_dir() -> Result<String> {
-    #[cfg(not(test))]
-    return Ok(dirs_sys::home_dir()
-        .ok_or(anyhow::anyhow!(
-            "could not resolve the user's home directory"
-        ))?
-        .try_to_string()?);
-    #[cfg(test)]
-    Ok(String::from("/home/test"))
-}
-
-fn env_var(key: &str) -> Result<String> {
-    #[cfg(not(test))]
-    return std::env::var(&key).context(format!("environment variable '{key}' is not defined"));
-    #[cfg(test)]
-    {
-        if key == "FAIL" {
-            anyhow::bail!("environment variable '{key}' is not defined")
-        }
-        let key = key.to_lowercase();
-        return Ok(format!("={key}="));
-    }
 }
 
 #[test]
