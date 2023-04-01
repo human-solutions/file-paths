@@ -154,10 +154,13 @@ fn exp_envs() {
 
 #[cfg(test)]
 fn exp_ok(path: &str) -> String {
-    expand_envs(path.into()).unwrap().into_owned()
+    expand_envs(path.into()).unwrap().replace('\\', "/")
 }
 
 #[cfg(test)]
 fn exp_err(path: &str) -> String {
-    expand_envs(path.into()).unwrap_err().to_string()
+    expand_envs(path.into())
+        .unwrap_err()
+        .to_string()
+        .replace('\\', "/")
 }
