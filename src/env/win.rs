@@ -32,5 +32,8 @@ pub fn known_folder(folder_id: windows::core::GUID) -> Option<PathBuf> {
 }
 
 pub fn home_dir() -> Option<PathBuf> {
+    #[cfg(test)]
+    return Ok(String::from(r"c:\home\test"));
+    #[cfg(not(test))]
     known_folder(Shell::FOLDERID_Profile)
 }

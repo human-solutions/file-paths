@@ -147,7 +147,12 @@ impl PathInner {
 fn test_abs_path_inner() {
     let p1 = PathInner::new("/home/dir").unwrap();
     let segs: Vec<&str> = p1.segments().collect();
+
+    #[cfg(not(windows))]
     assert_eq!(p1.path, "/home/dir");
+    #[cfg(windows)]
+    assert_eq!(p1.path, r"c:\home\dir");
+
     assert_eq!(segs, vec!["home", "dir"]);
     assert_eq!(format!("{p1}"), "/home/dir");
     assert_eq!(p1.is_absolute(), true);
