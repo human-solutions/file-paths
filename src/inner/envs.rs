@@ -169,13 +169,13 @@ fn exp_envs() {
 #[cfg(windows)]
 #[test]
 fn exp_envs_win() {
-    assert_eq!(exp_ok("."), r"C:\User\test\");
-    assert_eq!(exp_ok("./"), r"C:\User\test\");
-    assert_eq!(exp_ok("./dir"), r"C:\var\test\dir");
+    assert_eq!(exp_ok("."), r"C:\dir\test\");
+    assert_eq!(exp_ok("./"), r"C:\dir\test\");
+    assert_eq!(exp_ok("./dir"), r"C:\dir\test\dir");
 
-    assert_eq!(exp_ok("~"), r"C:\home\test\");
-    assert_eq!(exp_ok("~/"), r"C:\home\test\");
-    assert_eq!(exp_ok("~/dir"), r"C:\home\test\dir");
+    assert_eq!(exp_ok("~"), r"C:\User\test\");
+    assert_eq!(exp_ok("~/"), r"C:\User\test\");
+    assert_eq!(exp_ok("~/dir"), r"C:\User\test\dir");
 }
 
 #[cfg(not(windows))]
@@ -197,8 +197,5 @@ fn exp_ok(path: &str) -> String {
 
 #[cfg(test)]
 fn exp_err(path: &str) -> String {
-    expand_envs(path.into())
-        .unwrap_err()
-        .to_string()
-        .replace('\\', "/")
+    expand_envs(path.into()).unwrap_err().to_string()
 }
