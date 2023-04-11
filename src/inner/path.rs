@@ -32,8 +32,6 @@ impl AsRef<Path> for PathInner {
 impl Display for PathInner {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let (chr, path) = self.as_contracted(!f.alternate());
-        #[cfg(windows)]
-        let path = path.replace('/', "\\");
         if let Some(chr) = chr {
             write!(f, "{chr}{SEP}")?;
         }
@@ -44,6 +42,8 @@ impl Display for PathInner {
 impl Debug for PathInner {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let (chr, path) = self.as_contracted(!f.alternate());
+        #[cfg(windows)]
+        let path = path.replace('/', "\\");
         if let Some(chr) = chr {
             write!(f, "{chr}{SEP}")?;
         }
@@ -179,9 +179,9 @@ fn test_root_win() {
     // a windows-formatted c:/ path is kept on win.
     let p1 = PathInner::new("c:/").unwrap();
     let segs: Vec<&str> = p1.segments().collect();
-    assert_eq!(p1.path, "c:/");
+    assert_eq!(p1.path, r"c:\");
     assert_eq!(segs, Vec::<&str>::new());
-    assert_eq!(format!("{p1}"), "c:/");
+    assert_eq!(format!("{p1}"), r"c:\");
     assert_eq!(p1.is_absolute(), true);
 }
 
