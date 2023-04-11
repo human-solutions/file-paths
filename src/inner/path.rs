@@ -43,7 +43,7 @@ impl Debug for PathInner {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let (chr, path) = self.as_contracted(!f.alternate());
         #[cfg(windows)]
-        let path = path.segments().collect().join("/");
+        let path = self.path.segments().collect().join("/");
         if let Some(chr) = chr {
             write!(f, "{chr}{SEP}")?;
         }
@@ -97,7 +97,7 @@ impl PathInner {
 
     pub(crate) fn is_absolute(&self) -> bool {
         #[cfg(windows)]
-        return self.path.starts_with('\\') || (self.path.len() > 3 && self.path[1..3] == ":\\");
+        return self.path.starts_with('\\') || (self.path.len() > 3 && &self.path[1..3] == ":\\");
         #[cfg(not(windows))]
         return self.path.starts_with('/');
     }
@@ -220,4 +220,12 @@ fn test_cwd_path_inner() {
     assert_eq!(segs, vec!["var", "test", "dir"]);
     assert_eq!(format!("{p1}"), "./dir");
     assert_eq!(p1.is_absolute(), true);
+}
+
+#[test]
+fn test_display() {
+    let p1 = PathInner::new("./dir/hi").unwrap();
+
+    assert_eq!(format!("{p1}"), "./dir/hi");
+    assert_eq!(format!("{p1:#}"), "/var/test/dir/hi");
 }
