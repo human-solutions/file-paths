@@ -237,7 +237,7 @@ fn test_display() {
     let p1 = PathInner::new(r".\dir\hi").unwrap();
 
     assert_eq!(format!("{p1}"), r".\dir\hi");
-    assert_eq!(format!("{p1:#}"), "/var/test/dir/hi");
+    assert_eq!(format!("{p1:#}"), r"\var\test\dir\hi");
 }
 
 #[test]

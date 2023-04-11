@@ -11,14 +11,14 @@ pub struct Segments<'a> {
 
 impl<'a> Segments<'a> {
     pub(crate) fn new(path: &'a PathInner) -> Self {
+        let path = path.relative_part();
         let lengths = path
-            .path
             .split('/')
             .filter(|s| !s.is_empty())
             .map(|s| s.len())
             .collect();
         Self {
-            path: path.relative_part(),
+            path,
             lengths,
             pos: None,
             start: 0,
