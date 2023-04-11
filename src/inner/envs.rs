@@ -174,6 +174,30 @@ fn exp_envs() {
     );
 }
 
+#[cfg(windows)]
+#[test]
+fn exp_envs_win() {
+    assert_eq!(exp_ok("."), r"C:\User\test\");
+    assert_eq!(exp_ok("./"), r"C:\User\test\");
+    assert_eq!(exp_ok("./dir"), r"C:\var\test\dir");
+
+    assert_eq!(exp_ok("~"), r"C:\home\test\");
+    assert_eq!(exp_ok("~/"), r"C:\home\test\");
+    assert_eq!(exp_ok("~/dir"), r"C:\home\test\dir");
+}
+
+#[cfg(not(windows))]
+#[test]
+fn exp_envs_lin() {
+    assert_eq!(exp_ok("."), "/var/test/");
+    assert_eq!(exp_ok("./"), "/var/test/");
+    assert_eq!(exp_ok("./dir"), "/var/test/dir");
+
+    assert_eq!(exp_ok("~"), "/home/test/");
+    assert_eq!(exp_ok("~/"), "/home/test/");
+    assert_eq!(exp_ok("~/dir"), "/home/test/dir");
+}
+
 #[cfg(test)]
 fn exp_ok(path: &str) -> String {
     expand_envs(path.into()).unwrap().replace('\\', "/")

@@ -36,7 +36,7 @@ and have environment variables resolved at load.
 
 ```toml
 dir1 = "~/mydir/${SOME_ENV}/../"
-dir2 = "c:\\anotherdir\\%ANOTHER_ENV%"
+dir2 = "C:\\anotherdir\\%ANOTHER_ENV%"
 ```
 
 ## Clear expectations
@@ -81,7 +81,7 @@ fn test() -> anyhow::Result<()> {
     #[cfg(not(windows))]
     assert_eq!(format!("{dir:#}"), "/home/user/dir2");
     #[cfg(windows)]
-    assert_eq!(format!("{dir:#}"), r"c:\Users\user\dir2");
+    assert_eq!(format!("{dir:#}"), r"C:\Users\user\dir2");
 
     //////// Debug ////////
     
@@ -173,11 +173,11 @@ Forbidden in `strict` mode or when running on Windows:
 The path separators are kept in memory and displayed in a platform-native representation,
 i.e. using the platform where the binary is running. For Windows, it's `\` and for the others `/`.
 
-On Windows, any drive letters are kept lower-cased, and on the others, it is discarded.
+On Windows, any drive letters are kept upper-cased, and on the others, it is discarded.
 
-This means that a string written as either `c:\my\path` or `/my/path`
+This means that a string written as either `C:\my\path` or `/my/path`
 is converted and stored in memory and displayed as:
-- Windows: `c:\my\path` when the current directory's drive letter is `c`
+- Windows: `C:\my\path` when the current directory's drive letter is `c`
 - Others: `/my/path`
 
 ## Path components
@@ -195,11 +195,11 @@ Path resolution is done without file-system access so that paths don't need to e
 
 | Path<sup>*</sup>         | Becomes                                  | When               | Is                                       | Comment
 | ---                      | ---                                      | ---                | ---                                      | ---
-| `.`, `./`                | nix: `/tmp`<br>win: `c:\tmp`             | current_dir()      | nix: `/tmp`<br>win: `c:\tmp`             |
-| `~`, `~/`                | nix: `/Users/tom`<br>win: `c:\Users\tom` | home_dir()         | nix: `/Users/tom`<br>win: `c:\Users\tom` |
-| `/`                      | nix: `/`<br>win: `c:\`                   | -<br>current_dir() | - <br>win: `c:/somedir`                  | - <br> win: Same drive as the current dir
-| `c:/`, `C:/`             | nix: `/`<br>win: `c:\`                   |                    |                                          | nix: Drive letter removed<br>win: Drive letters always in lower case
-| `c:dir`                  | nix: `/tmp/dir`<br>win: `c:\tmp\dir`     | current_dir()      | nix: `/tmp`<br>win: `c:\tmp`             |
+| `.`, `./`                | nix: `/tmp`<br>win: `C:\tmp`             | current_dir()      | nix: `/tmp`<br>win: `C:\tmp`             |
+| `~`, `~/`                | nix: `/Users/tom`<br>win: `C:\Users\tom` | home_dir()         | nix: `/Users/tom`<br>win: `C:\Users\tom` |
+| `/`                      | nix: `/`<br>win: `C:\`                   | -<br>current_dir() | - <br>win: `C:/somedir`                  | - <br> win: Same drive as the current dir
+| `c:/`, `C:/`             | nix: `/`<br>win: `C:\`                   |                    |                                          | nix: Drive letter removed<br>win: Drive letters always in upper case
+| `C:dir`                  | nix: `dir`<br>win: `C:dir` .             |                    |                                          |
 | `dir//dir`               | nix: `dir/dir`<br>win: `dir\dir`         |                    |                                          | Multiple slashes are joined
 | `dir/./dir`              | nix: `dir/dir`<br>win: `dir\dir`         |                    |                                          | Dots inside of a path are ignored
 | `dir/..`                 |                                          |                    |                                          | Empty path

@@ -12,7 +12,7 @@ use crate::{
     SEP, SLASH,
 };
 
-use super::{envs::contract_envs, expand_envs, windows_drive};
+use super::{envs::contract_envs, expand_envs};
 
 pub(crate) struct PathInner {
     /// an absolute path is guaranteed to start with
@@ -61,13 +61,22 @@ impl PathInner {
         let mut inner = PathInner::empty();
 
         let path = expand_envs(path)?;
-        let (drive, path) = windows_drive(&path)?;
-        if !drive.is_empty() {
-            inner.set_root(&drive.to_string());
-        } else if path.starts_with(SLASH) {
+        let mut path = if let Some(_drive) = win_drive(&path) {
+            #[cfg(windows)]
+            {
+                inner.path.push(_drive);
+                inner.path.push(':');
+            }
+            &path[2..]
+        } else {
+            &path
+        };
+
+        if path.starts_with(SLASH) {
             inner.path.push(SEP);
+            path = &path[1..];
         }
-        let mut iter = InnerSegmentIter::new(&path);
+        let mut iter = InnerSegmentIter::new(path);
 
         while let Some(segment) = iter.next() {
             inner.push_segment(segment)?;
@@ -88,11 +97,6 @@ impl PathInner {
         } else {
             (None, self.path.as_str())
         }
-    }
-
-    fn set_root(&mut self, root: &str) {
-        debug_assert!(self.path.is_empty());
-        self.path.push_str(root);
     }
 
     pub(crate) fn is_absolute(&self) -> bool {
@@ -143,6 +147,18 @@ impl PathInner {
     }
 }
 
+pub fn win_drive(path: &str) -> Option<char> {
+    let found = path.starts_with(|c: char| c.is_ascii_alphabetic())
+        && path.len() >= 2
+        && &path[1..2] == ":";
+
+    if found {
+        Some(path.chars().next().unwrap().to_ascii_uppercase())
+    } else {
+        None
+    }
+}
+
 #[test]
 fn test_abs_path_inner() {
     let p1 = PathInner::new("/home/dir").unwrap();
@@ -151,7 +167,7 @@ fn test_abs_path_inner() {
     #[cfg(not(windows))]
     assert_eq!(p1.path, "/home/dir");
     #[cfg(windows)]
-    assert_eq!(p1.path, r"c:\home\dir");
+    assert_eq!(p1.path, r"C:\home\dir");
 
     assert_eq!(segs, vec!["home", "dir"]);
     assert_eq!(format!("{p1}"), "/home/dir");
