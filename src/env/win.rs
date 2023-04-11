@@ -23,9 +23,13 @@ pub fn known_folder(folder_id: windows::core::GUID) -> Result<String> {
             let path = slice::from_raw_parts(path_ptr, len);
             let ostr: OsString = OsStringExt::from_wide(path);
             windows::Win32::System::Com::CoTaskMemFree(path_ptr as *const c_void);
-            Ok(ostr
-                .into_string()
-                .context("invalid characters in the users home directory: {os_str}")?)
+            match os_str.into_string() {
+                Ok(s) => return Ok(s),
+                Err(s) => bail!(
+                    "invalid characters in user home directory: {}",
+                    s.to_string_lossy()
+                ),
+            }
         } else {
             windows::Win32::System::Com::CoTaskMemFree(path_ptr as *const c_void);
             bail!("could not resolve the user's home directory")

@@ -22,7 +22,10 @@ pub fn home_dir() -> Result<String> {
         if let Some(os_str) = os_str {
             match os_str.into_string() {
                 Ok(s) => return Ok(s),
-                Err(s) => bail!("Invalid characters in {}", s.to_string_lossy()),
+                Err(s) => bail!(
+                    "invalid characters in user home directory: {}",
+                    s.to_string_lossy()
+                ),
             }
         } else {
             bail!("could not resolve the user's home directory")
