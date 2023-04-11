@@ -1,5 +1,3 @@
-#![allow(unused_imports)]
-
 use anyhow::Result;
 
 #[cfg(unix)]
@@ -8,9 +6,9 @@ mod nix;
 mod win;
 
 #[cfg(unix)]
-use nix as dir;
+pub(crate) use nix::home_dir;
 #[cfg(target_os = "windows")]
-use win as dir;
+pub(crate) use win::home_dir;
 
 #[cfg(not(test))]
 use crate::ext::PathBufExt;
@@ -18,19 +16,10 @@ use crate::ext::PathBufExt;
 pub(crate) fn current_dir() -> Result<String> {
     #[cfg(not(test))]
     return Ok(std::env::current_dir()?.try_to_string()?);
-    #[cfg(test)]
-    Ok(String::from("/var/test"))
-}
-
-pub(crate) fn home_dir() -> Result<String> {
-    #[cfg(not(test))]
-    return Ok(dir::home_dir()
-        .ok_or(anyhow::anyhow!(
-            "could not resolve the user's home directory"
-        ))?
-        .try_to_string()?);
-    #[cfg(test)]
-    Ok(String::from("/home/test"))
+    #[cfg(all(not(windows), test))]
+    return Ok(String::from("/var/test"));
+    #[cfg(all(windows, test))]
+    return Ok(String::from(r"C:\dir\test"));
 }
 
 pub(crate) fn env_var(key: &str) -> Result<String> {
