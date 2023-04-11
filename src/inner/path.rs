@@ -43,7 +43,7 @@ impl Debug for PathInner {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let (chr, path) = self.as_contracted(!f.alternate());
         #[cfg(windows)]
-        let path = self.path.segments().collect().join("/");
+        let path = self.segments().collect().join("/");
         if let Some(chr) = chr {
             write!(f, "{chr}{SEP}")?;
         }
