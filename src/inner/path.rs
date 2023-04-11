@@ -32,6 +32,8 @@ impl AsRef<Path> for PathInner {
 impl Display for PathInner {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let (chr, path) = self.as_contracted(!f.alternate());
+        #[cfg(windows)]
+        let path = path.replace('/', "\\");
         if let Some(chr) = chr {
             write!(f, "{chr}{SEP}")?;
         }
@@ -42,8 +44,6 @@ impl Display for PathInner {
 impl Debug for PathInner {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let (chr, path) = self.as_contracted(!f.alternate());
-        #[cfg(windows)]
-        let path = self.segments().collect::<Vec<_>>().join("/");
         if let Some(chr) = chr {
             write!(f, "{chr}{SEP}")?;
         }
@@ -222,10 +222,28 @@ fn test_cwd_path_inner() {
     assert_eq!(p1.is_absolute(), true);
 }
 
+#[cfg(not(windows))]
 #[test]
 fn test_display() {
     let p1 = PathInner::new("./dir/hi").unwrap();
 
     assert_eq!(format!("{p1}"), "./dir/hi");
     assert_eq!(format!("{p1:#}"), "/var/test/dir/hi");
+}
+
+#[cfg(windows)]
+#[test]
+fn test_display() {
+    let p1 = PathInner::new(r".\dir\hi").unwrap();
+
+    assert_eq!(format!("{p1}"), r".\dir\hi");
+    assert_eq!(format!("{p1:#}"), "/var/test/dir/hi");
+}
+
+#[test]
+fn test_debug() {
+    let p1 = PathInner::new("./dir/hi").unwrap();
+
+    assert_eq!(format!("{p1:?}"), "./dir/hi");
+    assert_eq!(format!("{p1:#?}"), "/var/test/dir/hi");
 }

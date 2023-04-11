@@ -53,15 +53,15 @@
 //!     
 //!     //////// Display ////////
 //!
-//!     #[cfg(not(win))]
+//!     #[cfg(not(windows))]
 //!     assert_eq!(format!("{dir}"), "~/dir2");
 //!     #[cfg(win)]
 //!     assert_eq!(format!("{dir}"), r"~\dir2");
 //!
 //!     // using alternate
-//!     #[cfg(not(win))]
+//!     #[cfg(not(windows))]
 //!     assert_eq!(format!("{dir:#}"), "/home/user/dir2");
-//!     #[cfg(win)]
+//!     #[cfg(windows)]
 //!     assert_eq!(format!("{dir:#}"), r"c:\Users\user\dir2");
 //!
 //!     //////// Debug ////////
