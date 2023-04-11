@@ -170,7 +170,7 @@ pub fn current_drive() -> Result<char> {
     use anyhow::bail;
 
     let cwd = current_dir()?;
-    match win_drive(cwd) {
+    match win_drive(&cwd) {
         Some(drive) => Ok(drive),
         None => bail!("could not extract drive letter from {cwd}"),
     }
