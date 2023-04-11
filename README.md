@@ -7,11 +7,11 @@ Please don't edit. This document has been generated from src/readme.tpl.md
 - [Use cases](#use-cases)
     - [Config files](#config-files)
     - [Clear expectations](#clear-expectations)
-    - [Testable](#testable)
+    - [Readable and Testable](#readable-and-testable)
     - [Cross-platform](#cross-platform)
     - [Convenient](#convenient)
 - [Design goals](#design-goals)
-- [Limits](#limits)
+- [Limitations](#limitations)
     - [Characters](#characters)
     - [Path separators (slash) and drives](#path-separators-(slash)-and-drives)
     - [Path components](#path-components)
@@ -53,7 +53,16 @@ Use one of the below to communicate what your function or API expects.
 fn mirror(file: RelFilePath, from: AbsDirPath, to: AbsDirPath) {}
 ```
 
-## Testable
+## Readable and Testable
+
+The [Display] implementation outputs the platform-native representation of
+a path, using the native path separator whereas the [Debug] implementation
+uses the `/` path separator and also includes the path type.
+Both for ease of testing.
+
+By default, the paths are contracted, meaning that if the path starts with
+user home dir then the former that part is replaced with `~` and if it starts
+with the current working directory the replacement is `.`.
 
 ```rust
 #[test]
@@ -61,17 +70,26 @@ fn test() -> anyhow::Result<()> {
     // imagine that the path string is read from a conf.toml file:
     let dir = AbsDirPath::new(r"~/dir1//..\dir2");
     
-    // when using the alternative debug specifier, if the path starts
-    // with current working directory or user home, then they are replaced
-    // with '.' or '~' respectively. The path separator used is always '/'.
-    assert_eq!(format!("{:#?}", dir), "AbsDirPath(~/dir2)");
+    //////// Display ////////
+
+    #[cfg(not(win))]
+    assert_eq!(format!("{dir}"), "~/dir2");
+    #[cfg(win)]
+    assert_eq!(format!("{dir}"), r"~\dir2");
+
+    // using alternate
+    #[cfg(not(win))]
+    assert_eq!(format!("{dir:#}"), "/home/user/dir2");
+    #[cfg(win)]
+    assert_eq!(format!("{dir:#}"), r"c:\Users\user\dir2");
+
+    //////// Debug ////////
     
-    // standard debug output uses the internal representation of the path
-    // which uses the full path with platform specific path separators.
-    // linux:
-    assert_eq!(format!("{:?}", dir), "AbsDirPath(/home/me/code/dir2)");
-    // windows:
-    assert_eq!(format!("{:?}", dir), r"AbsDirPath(c:\Users\me\code\dir2)");
+    // using standard Debug
+    assert_eq!(format!("{dir:?}"), r#"AbsDirPath("~/dir2")"#);
+
+    // using alternative Debug
+    assert_eq!(format!("{dir:#?}", r#"AbsDirPath("/home/user/dir2")"#))
 }
 ```
 
@@ -122,7 +140,7 @@ Other:
     - the message includes the current working directory for relative paths.
 
 
-# Limits
+# Limitations
 
 The limits are verified when creating and manipulating a path. By default, on Unix-based platforms,
 only a few limits are applied. On Windows, there are automatically more restrictions.

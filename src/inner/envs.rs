@@ -26,6 +26,28 @@ impl Start {
     }
 }
 
+pub(crate) fn contract_envs<'a>(path: &'a str) -> Result<(Option<char>, &'a str)> {
+    Ok(if let Some(path) = remove_abs_start(path, &home_dir()?) {
+        (Some('~'), path)
+    } else if let Some(path) = remove_abs_start(path, &current_dir()?) {
+        (Some('.'), path)
+    } else {
+        (None, path)
+    })
+}
+
+fn remove_abs_start<'a>(path: &'a str, start: &str) -> Option<&'a str> {
+    if path.starts_with(start) {
+        let mut pos = start.len();
+        if path[pos..].starts_with(SEP) {
+            pos += 1;
+        }
+        Some(&path[pos..])
+    } else {
+        None
+    }
+}
+
 pub(crate) fn expand_envs<'a>(path: &'a str) -> Result<Cow<str>> {
     let start = Start::from(&path);
 
