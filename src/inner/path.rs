@@ -73,6 +73,11 @@ impl PathInner {
         };
 
         if path.starts_with(SLASH) {
+            #[cfg(windows)]
+            {
+                inner.path.push(current_drive()?);
+                inner.path.push(':');
+            }
             inner.path.push(SEP);
             path = &path[1..];
         }
@@ -156,6 +161,18 @@ pub fn win_drive(path: &str) -> Option<char> {
         Some(path.chars().next().unwrap().to_ascii_uppercase())
     } else {
         None
+    }
+}
+
+#[cfg(windows)]
+pub fn current_drive() -> Result<char> {
+    use crate::env::current_dir;
+    use anyhow::bail;
+
+    let cwd = current_dir()?;
+    match win_drive(cwd) {
+        Some(drive) => Ok(drive),
+        None => bail!("could not extract drive letter from {cwd}"),
     }
 }
 

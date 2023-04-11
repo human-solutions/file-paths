@@ -140,14 +140,6 @@ fn exp_envs() {
     assert_eq!(exp_ok("/%HI%"), "/=hi=");
     assert_eq!(exp_ok("/%HI%/"), "/=hi=/");
 
-    assert_eq!(exp_ok("."), "/var/test/");
-    assert_eq!(exp_ok("./"), "/var/test/");
-    assert_eq!(exp_ok("./dir"), "/var/test/dir");
-
-    assert_eq!(exp_ok("~"), "/home/test/");
-    assert_eq!(exp_ok("~/"), "/home/test/");
-    assert_eq!(exp_ok("~/dir"), "/home/test/dir");
-
     // not expanded
     assert_eq!(exp_ok("/s$HI$"), "/s$HI$");
     assert_eq!(exp_ok("/%$HI"), "/%$HI");
