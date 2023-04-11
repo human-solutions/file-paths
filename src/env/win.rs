@@ -21,7 +21,7 @@ pub fn known_folder(folder_id: windows::core::GUID) -> Result<String> {
         if result == 0 {
             let len = windows::Win32::Globalization::lstrlenW(path_ptr) as usize;
             let path = slice::from_raw_parts(path_ptr, len);
-            let ostr: OsString = OsStringExt::from_wide(path);
+            let os_str: OsString = OsStringExt::from_wide(path);
             windows::Win32::System::Com::CoTaskMemFree(path_ptr as *const c_void);
             match os_str.into_string() {
                 Ok(s) => return Ok(s),
