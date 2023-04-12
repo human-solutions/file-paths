@@ -16,7 +16,7 @@ strict = []
 anyhow = "1.0"
 
 [dev-dependencies]
-markdown-includes = "0.1"
+markdown-includes = "0.1.1"
 
 [target."cfg(unix)".dependencies.libc]
 version = "0.2"

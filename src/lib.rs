@@ -13,7 +13,7 @@
 //!
 //! ```toml
 //! dir1 = "~/mydir/${SOME_ENV}/../"
-//! dir2 = "c:\\anotherdir\\%ANOTHER_ENV%"
+//! dir2 = "C:\\anotherdir\\%ANOTHER_ENV%"
 //! ```
 //!
 //! ## Clear expectations
@@ -32,7 +32,16 @@
 //! fn mirror(file: RelFilePath, from: AbsDirPath, to: AbsDirPath) {}
 //! ```
 //!
-//! ## Testable
+//! ## Readable and Testable
+//!
+//! The [Display] implementation outputs the platform-native representation of
+//! a path, using the native path separator whereas the [Debug] implementation
+//! uses the `/` path separator and also includes the path type.
+//! Both for ease of testing.
+//!
+//! By default, the paths are contracted, meaning that if the path starts with
+//! user home dir then the former that part is replaced with `~` and if it starts
+//! with the current working directory the replacement is `.`.
 //!
 //! ```rust
 //! # use x_path::AbsDirPath;
@@ -42,17 +51,26 @@
 //!     // imagine that the path string is read from a conf.toml file:
 //!     let dir = AbsDirPath::new(r"~/dir1//..\dir2");
 //!     
-//!     // when using the alternative debug specifier, if the path starts
-//!     // with current working directory or user home, then they are replaced
-//!     // with '.' or '~' respectively. The path separator used is always '/'.
-//!     assert_eq!(format!("{:#?}", dir), "AbsDirPath(~/dir2)");
+//!     //////// Display ////////
+//!
+//!     #[cfg(not(windows))]
+//!     assert_eq!(format!("{dir}"), "~/dir2");
+//!     #[cfg(win)]
+//!     assert_eq!(format!("{dir}"), r"~\dir2");
+//!
+//!     // using alternate
+//!     #[cfg(not(windows))]
+//!     assert_eq!(format!("{dir:#}"), "/home/user/dir2");
+//!     #[cfg(windows)]
+//!     assert_eq!(format!("{dir:#}"), r"C:\Users\user\dir2");
+//!
+//!     //////// Debug ////////
 //!     
-//!     // standard debug output uses the internal representation of the path
-//!     // which uses the full path with platform specific path separators.
-//!     // linux:
-//!     assert_eq!(format!("{:?}", dir), "AbsDirPath(/home/me/code/dir2)");
-//!     // windows:
-//!     assert_eq!(format!("{:?}", dir), r"AbsDirPath(c:\Users\me\code\dir2)");
+//!     // using standard Debug
+//!     assert_eq!(format!("{dir:?}"), r#"AbsDirPath("~/dir2")"#);
+//!
+//!     // using alternative Debug
+//!     assert_eq!(format!("{dir:#?}", r#"AbsDirPath("/home/user/dir2")"#))
 //! }
 //! ```
 //!
@@ -103,7 +121,7 @@
 //!     - the message includes the current working directory for relative paths.
 //!
 //!
-//! # Limits
+//! # Limitations
 //!
 //! The limits are verified when creating and manipulating a path. By default, on Unix-based platforms,
 //! only a few limits are applied. On Windows, there are automatically more restrictions.
@@ -136,11 +154,11 @@
 //! The path separators are kept in memory and displayed in a platform-native representation,
 //! i.e. using the platform where the binary is running. For Windows, it's `\` and for the others `/`.
 //!
-//! On Windows, any drive letters are kept lower-cased, and on the others, it is discarded.
+//! On Windows, any drive letters are kept upper-cased, and on the others, it is discarded.
 //!
-//! This means that a string written as either `c:\my\path` or `/my/path`
+//! This means that a string written as either `C:\my\path` or `/my/path`
 //! is converted and stored in memory and displayed as:
-//! - Windows: `c:\my\path` when the current directory's drive letter is `c`
+//! - Windows: `C:\my\path` when the current directory's drive letter is `c`
 //! - Others: `/my/path`
 //!
 //! ## Path components
@@ -158,11 +176,11 @@
 //!
 //! | Path<sup>*</sup>         | Becomes                                  | When               | Is                                       | Comment
 //! | ---                      | ---                                      | ---                | ---                                      | ---
-//! | `.`, `./`                | nix: `/tmp`<br>win: `c:\tmp`             | current_dir()      | nix: `/tmp`<br>win: `c:\tmp`             |
-//! | `~`, `~/`                | nix: `/Users/tom`<br>win: `c:\Users\tom` | home_dir()         | nix: `/Users/tom`<br>win: `c:\Users\tom` |
-//! | `/`                      | nix: `/`<br>win: `c:\`                   | -<br>current_dir() | - <br>win: `c:/somedir`                  | - <br> win: Same drive as the current dir
-//! | `c:/`, `C:/`             | nix: `/`<br>win: `c:\`                   |                    |                                          | nix: Drive letter removed<br>win: Drive letters always in lower case
-//! | `c:dir`                  | nix: `/tmp/dir`<br>win: `c:\tmp\dir`     | current_dir()      | nix: `/tmp`<br>win: `c:\tmp`             |
+//! | `.`, `./`                | nix: `/tmp`<br>win: `C:\tmp`             | current_dir()      | nix: `/tmp`<br>win: `C:\tmp`             |
+//! | `~`, `~/`                | nix: `/Users/tom`<br>win: `C:\Users\tom` | home_dir()         | nix: `/Users/tom`<br>win: `C:\Users\tom` |
+//! | `/`                      | nix: `/`<br>win: `C:\`                   | -<br>current_dir() | - <br>win: `C:/somedir`                  | - <br> win: Same drive as the current dir
+//! | `c:/`, `C:/`             | nix: `/`<br>win: `C:\`                   |                    |                                          | nix: Drive letter removed<br>win: Drive letters always in upper case
+//! | `C:dir`                  | nix: `dir`<br>win: `C:dir` .             |                    |                                          |
 //! | `dir//dir`               | nix: `dir/dir`<br>win: `dir\dir`         |                    |                                          | Multiple slashes are joined
 //! | `dir/./dir`              | nix: `dir/dir`<br>win: `dir\dir`         |                    |                                          | Dots inside of a path are ignored
 //! | `dir/..`                 |                                          |                    |                                          | Empty path

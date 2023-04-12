@@ -26,6 +26,28 @@ impl Start {
     }
 }
 
+pub(crate) fn contract_envs<'a>(path: &'a str) -> Result<(Option<char>, &'a str)> {
+    Ok(if let Some(path) = remove_abs_start(path, &home_dir()?) {
+        (Some('~'), path)
+    } else if let Some(path) = remove_abs_start(path, &current_dir()?) {
+        (Some('.'), path)
+    } else {
+        (None, path)
+    })
+}
+
+fn remove_abs_start<'a>(path: &'a str, start: &str) -> Option<&'a str> {
+    if path.starts_with(start) {
+        let mut pos = start.len();
+        if path[pos..].starts_with(SEP) {
+            pos += 1;
+        }
+        Some(&path[pos..])
+    } else {
+        None
+    }
+}
+
 pub(crate) fn expand_envs<'a>(path: &'a str) -> Result<Cow<str>> {
     let start = Start::from(&path);
 
@@ -104,60 +126,4 @@ fn prefix_home_dir<'a>(path: &'a str) -> Result<Cow<'a, str>> {
     }
     home.extend(path.chars());
     Ok(Cow::Owned(home))
-}
-
-#[test]
-fn exp_envs() {
-    assert_eq!(exp_ok("$HI"), "$HI");
-
-    assert_eq!(exp_ok("${HI}"), "=hi=");
-    assert_eq!(exp_ok("/${HI}"), "/=hi=");
-    assert_eq!(exp_ok("/${HI}/"), "/=hi=/");
-
-    assert_eq!(exp_ok("%HI%"), "=hi=");
-    assert_eq!(exp_ok("/%HI%"), "/=hi=");
-    assert_eq!(exp_ok("/%HI%/"), "/=hi=/");
-
-    assert_eq!(exp_ok("."), "/var/test/");
-    assert_eq!(exp_ok("./"), "/var/test/");
-    assert_eq!(exp_ok("./dir"), "/var/test/dir");
-
-    assert_eq!(exp_ok("~"), "/home/test/");
-    assert_eq!(exp_ok("~/"), "/home/test/");
-    assert_eq!(exp_ok("~/dir"), "/home/test/dir");
-
-    // not expanded
-    assert_eq!(exp_ok("/s$HI$"), "/s$HI$");
-    assert_eq!(exp_ok("/%$HI"), "/%$HI");
-    assert_eq!(exp_ok("/${HI"), "/${HI");
-    assert_eq!(exp_ok("/${H-}"), "/${H-}");
-    assert_eq!(exp_ok("/${H}s"), "/${H}s");
-    assert_eq!(exp_ok("/%H%s"), "/%H%s");
-    assert_eq!(exp_ok("/$"), "/$");
-
-    assert_eq!(exp_ok("/dir1/./dir2"), "/dir1/./dir2");
-    assert_eq!(exp_ok("dir1/./dir2"), "dir1/./dir2");
-
-    assert_eq!(exp_ok("/dir1/~/dir2"), "/dir1/~/dir2");
-    assert_eq!(exp_ok("dir1/~/dir2"), "dir1/~/dir2");
-
-    // errors
-    assert_eq!(exp_err("/%%"), "empty environment variable in path: /%%");
-
-    assert_eq!(exp_err("/${}"), "empty environment variable in path: /${}");
-
-    assert_eq!(
-        exp_err("/${FAIL}"),
-        "environment variable 'FAIL' is not defined"
-    );
-}
-
-#[cfg(test)]
-fn exp_ok(path: &str) -> String {
-    expand_envs(path.into()).unwrap().into_owned()
-}
-
-#[cfg(test)]
-fn exp_err(path: &str) -> String {
-    expand_envs(path.into()).unwrap_err().to_string()
 }

@@ -1,7 +1,11 @@
-mod expand_envs;
-mod path;
-mod win_drive;
+#[cfg(all(test, not(windows)))]
+mod test_lin;
+#[cfg(all(test, windows))]
+mod test_win;
 
-pub(crate) use expand_envs::expand_envs;
+mod drive;
+mod envs;
+mod path;
+
+pub(crate) use envs::expand_envs;
 pub(crate) use path::PathInner;
-pub(crate) use win_drive::windows_drive;

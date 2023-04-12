@@ -1,15 +1,16 @@
-use std::borrow::Cow;
 use std::iter::Peekable;
 use std::str::Split;
+
+use crate::SLASH;
 
 pub struct InnerSegmentIter<'a> {
     iter: Peekable<Split<'a, [char; 2]>>,
 }
 
 impl<'a> InnerSegmentIter<'a> {
-    pub(crate) fn new(path: &'a Cow<'a, str>) -> Self {
+    pub(crate) fn new(path: &'a str) -> Self {
         Self {
-            iter: path.split(['/', '\\']).peekable(),
+            iter: path.split(SLASH).peekable(),
         }
     }
 }
@@ -47,7 +48,7 @@ fn test_path_iter() {
 
 #[cfg(test)]
 fn segs(path: &str) -> Vec<String> {
-    InnerSegmentIter::new(&path.into())
+    InnerSegmentIter::new(&path)
         .map(|s| s.to_string())
         .collect::<Vec<_>>()
 }
