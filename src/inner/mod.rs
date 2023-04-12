@@ -1,3 +1,8 @@
+#[cfg(all(test, not(windows)))]
+mod test_lin;
+#[cfg(all(test, windows))]
+mod test_win;
+
 mod envs;
 mod path;
 
