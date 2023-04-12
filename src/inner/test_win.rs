@@ -6,12 +6,12 @@ use super::expand_envs;
 
 #[test]
 fn test_abs_path_inner() {
-    let p1 = PathInner::new("/home/dir").unwrap();
+    let p1 = PathInner::new("/home/di").unwrap();
     let segs: Vec<&str> = p1.segments().collect();
 
-    assert_eq!(p1.path, r"C:\home\dir");
-    assert_eq!(segs, vec!["home", "dir"]);
-    assert_eq!(format!("{p1}"), r"C:\home\dir");
+    assert_eq!(p1.path, "C:\\home\\di");
+    assert_eq!(segs, vec!["home", "di"]);
+    assert_eq!(format!("{p1}"), "C:\\home\\di");
     assert_eq!(p1.is_absolute(), true);
 }
 
@@ -28,12 +28,12 @@ fn test_no_path_inner() {
 
 #[test]
 fn test_root_lin() {
-    let p1 = PathInner::new(r"\").unwrap();
+    let p1 = PathInner::new("\\").unwrap();
     let segs: Vec<&str> = p1.segments().collect();
 
-    assert_eq!(p1.path, r"\");
+    assert_eq!(p1.path, "\\");
     assert_eq!(segs, Vec::<&str>::new());
-    assert_eq!(format!("{p1}"), r"\");
+    assert_eq!(format!("{p1}"), "\\");
     assert_eq!(p1.is_absolute(), true);
 }
 
@@ -43,50 +43,50 @@ fn test_root_win() {
     let p1 = PathInner::new("c:/").unwrap();
     let segs: Vec<&str> = p1.segments().collect();
 
-    assert_eq!(p1.path, r"c:\");
+    assert_eq!(p1.path, "c:\\");
     assert_eq!(segs, Vec::<&str>::new());
-    assert_eq!(format!("{p1}"), r"c:\");
+    assert_eq!(format!("{p1}"), "c:\\");
     assert_eq!(p1.is_absolute(), true);
 }
 
 #[test]
 fn test_home_path_inner() {
     // when running tests '~' = /home/test
-    let p1 = PathInner::new(r"~\dir").unwrap();
+    let p1 = PathInner::new("~\\di").unwrap();
     let segs: Vec<&str> = p1.segments().collect();
 
-    assert_eq!(p1.path, r"\home\test\dir");
-    assert_eq!(segs, vec!["home", "test", "dir"]);
-    assert_eq!(format!("{p1}"), "~\dir");
+    assert_eq!(p1.path, "\\home\\test\\di");
+    assert_eq!(segs, vec!["home", "test", "di"]);
+    assert_eq!(format!("{p1}"), "~\\di");
     assert_eq!(p1.is_absolute(), true);
 }
 
 #[test]
 fn test_cwd_path_inner() {
     // when running tests '.' = /var/test
-    let p1 = PathInner::new(r".\dir").unwrap();
+    let p1 = PathInner::new(".\\di").unwrap();
     let segs: Vec<&str> = p1.segments().collect();
 
-    assert_eq!(p1.path, r"\var\test\dir");
-    assert_eq!(segs, vec!["var", "test", "dir"]);
-    assert_eq!(format!("{p1}"), ".\dir");
+    assert_eq!(p1.path, "\\var\\test\\di");
+    assert_eq!(segs, vec!["va", "test", "di"]);
+    assert_eq!(format!("{p1}"), ".\\di");
     assert_eq!(p1.is_absolute(), true);
 }
 
 #[test]
 fn test_display() {
-    let p1 = PathInner::new(r".\dir\hi").unwrap();
+    let p1 = PathInner::new(".\\dir\\hi").unwrap();
 
-    assert_eq!(format!("{p1}"), r".\dir\hi");
-    assert_eq!(format!("{p1:#}"), r"\var\test\dir\hi");
+    assert_eq!(format!("{p1}"), ".\\dir\\hi");
+    assert_eq!(format!("{p1:#}"), "\\var\\test\\dir\\hi");
 }
 
 #[test]
 fn test_debug() {
-    let p1 = PathInner::new(r".\dir\hi").unwrap();
+    let p1 = PathInner::new(".\\dir\\hi").unwrap();
 
-    assert_eq!(format!("{p1:?}"), r".\dir\hi");
-    assert_eq!(format!("{p1:#?}"), r"\var\test\dir\hi");
+    assert_eq!(format!("{p1:?}"), ".\\dir\\hi");
+    assert_eq!(format!("{p1:#?}"), "\\var\\test\\dir\\hi");
 }
 
 #[test]
@@ -94,45 +94,48 @@ fn exp_envs() {
     assert_eq!(exp_ok("$HI"), "$HI");
 
     assert_eq!(exp_ok("${HI}"), "=hi=");
-    assert_eq!(exp_ok(r"\${HI}"), r"\=hi=");
-    assert_eq!(exp_ok(r"\${HI}\"), r"\=hi=\");
+    assert_eq!(exp_ok("\\${HI}"), "\\=hi=");
+    assert_eq!(exp_ok("\\${HI}\\"), "\\=hi=\\");
 
     assert_eq!(exp_ok("%HI%"), "=hi=");
-    assert_eq!(exp_ok(r"\%HI%"), r"\=hi=");
-    assert_eq!(exp_ok(r"\%HI%\"), r"\=hi=\");
+    assert_eq!(exp_ok("\\%HI%"), "\\=hi=");
+    assert_eq!(exp_ok("\\%HI%\\"), "\\=hi=\\");
 
     // not expanded
-    assert_eq!(exp_ok(r"\s$HI$"), r"\s$HI$");
-    assert_eq!(exp_ok(r"\%$HI"), r"\%$HI");
-    assert_eq!(exp_ok(r"\${HI"), r"\${HI");
-    assert_eq!(exp_ok(r"\${H-}"), r"\${H-}");
-    assert_eq!(exp_ok(r"\${H}s"), r"\${H}s");
-    assert_eq!(exp_ok(r"\%H%s"), r"\%H%s");
-    assert_eq!(exp_ok(r"\$"), r"\$");
+    assert_eq!(exp_ok("\\s$HI$"), "\\s$HI$");
+    assert_eq!(exp_ok("\\%$HI"), "\\%$HI");
+    assert_eq!(exp_ok("\\${HI"), "\\${HI");
+    assert_eq!(exp_ok("\\${H-}"), "\\${H-}");
+    assert_eq!(exp_ok("\\${H}s"), "\\${H}s");
+    assert_eq!(exp_ok("\\%H%s"), "\\%H%s");
+    assert_eq!(exp_ok("\\$"), "\\$");
 
-    assert_eq!(exp_ok(r"\dir1\.\dir2"), r"\dir1\.\dir2");
-    assert_eq!(exp_ok(r"dir1\.\dir2"), r"dir1\.\dir2");
+    assert_eq!(exp_ok("\\dir1\\.\\dir2"), "\\dir1\\.\\dir2");
+    assert_eq!(exp_ok("dir1\\.\\dir2"), "dir1\\.\\dir2");
 
-    assert_eq!(exp_ok(r"\dir1\~\dir2"), r"\dir1\~\dir2");
-    assert_eq!(exp_ok(r"dir1\~\dir2"), r"dir1\~\dir2");
+    assert_eq!(exp_ok("\\dir1\\~\\dir2"), "\\dir1\\~\\dir2");
+    assert_eq!(exp_ok("dir1\\~\\dir2"), "dir1\\~\\dir2");
 
     // errors
-    assert_eq!(exp_err(r"\%%"), r"empty environment variable in path: \%%");
-
-    assert_eq!(exp_err(r"\${}"), r"empty environment variable in path: \${}");
+    assert_eq!(exp_err("\\%%"), "empty environment variable in path: \\%%");
 
     assert_eq!(
-        exp_err(r"\${FAIL}"),
+        exp_err("\\${}"),
+        "empty environment variable in path: \\${}"
+    );
+
+    assert_eq!(
+        exp_err("\\${FAIL}"),
         "environment variable 'FAIL' is not defined"
     );
 
-    assert_eq!(exp_ok("."), r"C:\dir\test\");
-    assert_eq!(exp_ok(r".\"), r"C:\dir\test\");
-    assert_eq!(exp_ok(".\dir"), r"C:\dir\test\dir");
+    assert_eq!(exp_ok("."), "C:\\dir\\test\\");
+    assert_eq!(exp_ok(".\\"), "C:\\dir\\test\\");
+    assert_eq!(exp_ok(".\\di"), "C:\\dir\\test\\di");
 
-    assert_eq!(exp_ok("~"), r"C:\User\test\");
-    assert_eq!(exp_ok(r"~\"), r"C:\User\test\");
-    assert_eq!(exp_ok(r"~\dir"), r"C:\User\test\dir");
+    assert_eq!(exp_ok("~"), "C:\\User\\test\\");
+    assert_eq!(exp_ok("~\\"), "C:\\User\\test\\");
+    assert_eq!(exp_ok("~\\di"), "C:\\User\\test\\di");
 }
 
 #[cfg(test)]
