@@ -139,7 +139,7 @@ fn exp_envs() {
 }
 
 #[cfg(test)]
-fn exp_ok(path: &str) -> String {
+fn exp_ok(path: &str) -> Cow<str> {
     expand_envs(path.into()).unwrap()
 }
 
