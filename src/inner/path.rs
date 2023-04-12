@@ -61,27 +61,16 @@ impl PathInner {
         let mut inner = PathInner::empty();
 
         let path = expand_envs(path)?;
-        let mut path = if let Some(_drive) = win_drive(&path) {
-            #[cfg(windows)]
-            {
-                inner.path.push(_drive);
-                inner.path.push(':');
-            }
-            &path[2..]
-        } else {
-            &path
-        };
+
+        #[cfg(windows)]
+        let path = super::drive::add_win_drive(&path, &mut inner.path)?;
+        #[cfg(not(windows))]
+        let path = super::drive::remove_win_drive(&path);
 
         if path.starts_with(SLASH) {
-            #[cfg(windows)]
-            {
-                inner.path.push(current_drive()?);
-                inner.path.push(':');
-            }
-            inner.path.push(SEP);
-            path = &path[1..];
+            inner.path.push(SEP)
         }
-        let mut iter = InnerSegmentIter::new(path);
+        let mut iter = InnerSegmentIter::new(&path);
 
         while let Some(segment) = iter.next() {
             inner.push_segment(segment)?;
@@ -149,29 +138,5 @@ impl PathInner {
 
     pub fn segments(&self) -> Segments {
         Segments::new(self)
-    }
-}
-
-pub fn win_drive(path: &str) -> Option<char> {
-    let found = path.starts_with(|c: char| c.is_ascii_alphabetic())
-        && path.len() >= 2
-        && &path[1..2] == ":";
-
-    if found {
-        Some(path.chars().next().unwrap().to_ascii_uppercase())
-    } else {
-        None
-    }
-}
-
-#[cfg(windows)]
-pub fn current_drive() -> Result<char> {
-    use crate::env::current_dir;
-    use anyhow::bail;
-
-    let cwd = current_dir()?;
-    match win_drive(&cwd) {
-        Some(drive) => Ok(drive),
-        None => bail!("could not extract drive letter from {cwd}"),
     }
 }

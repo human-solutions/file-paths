@@ -3,6 +3,7 @@ mod test_lin;
 #[cfg(all(test, windows))]
 mod test_win;
 
+mod drive;
 mod envs;
 mod path;
 

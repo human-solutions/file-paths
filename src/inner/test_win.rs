@@ -31,9 +31,9 @@ fn test_root_lin() {
     let p1 = PathInner::new("\\").unwrap();
     let segs: Vec<&str> = p1.segments().collect();
 
-    assert_eq!(p1.path, "\\");
+    assert_eq!(p1.path, "C:\\");
     assert_eq!(segs, Vec::<&str>::new());
-    assert_eq!(format!("{p1}"), "\\");
+    assert_eq!(format!("{p1}"), "C:\\");
     assert_eq!(p1.is_absolute(), true);
 }
 
@@ -43,9 +43,9 @@ fn test_root_win() {
     let p1 = PathInner::new("c:/").unwrap();
     let segs: Vec<&str> = p1.segments().collect();
 
-    assert_eq!(p1.path, "c:\\");
+    assert_eq!(p1.path, "C:\\");
     assert_eq!(segs, Vec::<&str>::new());
-    assert_eq!(format!("{p1}"), "c:\\");
+    assert_eq!(format!("{p1}"), "C:\\");
     assert_eq!(p1.is_absolute(), true);
 }
 
@@ -134,8 +134,9 @@ fn exp_envs() {
     assert_eq!(exp_ok(".\\di"), "C:\\dir\\test\\di");
 
     assert_eq!(exp_ok("~"), "C:\\User\\test\\");
-    assert_eq!(exp_ok("~\\"), "C:\\User\\test\\");
-    assert_eq!(exp_ok("~\\di"), "C:\\User\\test\\di");
+    // the double ending slash is ok at expansion stage as it is removed later
+    assert_eq!(exp_ok("~\\"), "C:\\User\\test\\\\");
+    assert_eq!(exp_ok("~\\di"), "C:\\User\\test\\\\di");
 }
 
 #[cfg(test)]
