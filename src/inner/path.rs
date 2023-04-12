@@ -95,7 +95,7 @@ impl PathInner {
 
     pub(crate) fn is_absolute(&self) -> bool {
         #[cfg(windows)]
-        return self.path.starts_with('\\') || (self.path.len() > 3 && &self.path[1..3] == ":\\");
+        return self.path.starts_with('\\') || (self.path.len() >= 3 && &self.path[1..3] == ":\\");
         #[cfg(not(windows))]
         return self.path.starts_with('/');
     }

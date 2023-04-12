@@ -19,7 +19,7 @@ pub(crate) fn current_dir() -> Result<String> {
     #[cfg(all(not(windows), test))]
     return Ok(String::from("/var/test"));
     #[cfg(all(windows, test))]
-    return Ok(String::from(r"C:\dir\test"));
+    return Ok(String::from(r"C:\current"));
 }
 
 pub(crate) fn env_var(key: &str) -> Result<String> {

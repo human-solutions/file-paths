@@ -20,9 +20,9 @@ fn test_no_path_inner() {
     let p1 = PathInner::new("").unwrap();
     let segs: Vec<&str> = p1.segments().collect();
 
-    assert_eq!(p1.path, "");
+    assert_eq!(p1.path, "C:");
     assert_eq!(segs, Vec::<&str>::new());
-    assert_eq!(format!("{p1}"), "");
+    assert_eq!(format!("{p1}"), "C:");
     assert_eq!(p1.is_absolute(), false);
 }
 
@@ -56,7 +56,7 @@ fn test_home_path_inner() {
     let segs: Vec<&str> = p1.segments().collect();
 
     assert_eq!(p1.path, "C:\\User\\test\\di");
-    assert_eq!(segs, vec!["home", "test", "di"]);
+    assert_eq!(segs, vec!["User", "test", "di"]);
     assert_eq!(format!("{p1}"), "~\\di");
     assert_eq!(p1.is_absolute(), true);
 }
@@ -67,8 +67,8 @@ fn test_cwd_path_inner() {
     let p1 = PathInner::new(".\\di").unwrap();
     let segs: Vec<&str> = p1.segments().collect();
 
-    assert_eq!(p1.path, "C:\\var\\test\\di");
-    assert_eq!(segs, vec!["va", "test", "di"]);
+    assert_eq!(p1.path, "C:\\current\\di");
+    assert_eq!(segs, vec!["current", "di"]);
     assert_eq!(format!("{p1}"), ".\\di");
     assert_eq!(p1.is_absolute(), true);
 }
@@ -78,7 +78,7 @@ fn test_display() {
     let p1 = PathInner::new(".\\dir\\hi").unwrap();
 
     assert_eq!(format!("{p1}"), ".\\dir\\hi");
-    assert_eq!(format!("{p1:#}"), "\\var\\test\\dir\\hi");
+    assert_eq!(format!("{p1:#}"), "C:\\current\\dir\\hi");
 }
 
 #[test]
@@ -86,7 +86,7 @@ fn test_debug() {
     let p1 = PathInner::new(".\\dir\\hi").unwrap();
 
     assert_eq!(format!("{p1:?}"), ".\\dir\\hi");
-    assert_eq!(format!("{p1:#?}"), "\\var\\test\\dir\\hi");
+    assert_eq!(format!("{p1:#?}"), "C:\\current\\dir\\hi");
 }
 
 #[test]
