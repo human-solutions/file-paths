@@ -234,6 +234,7 @@ mod env;
 mod ext;
 mod inner;
 mod iter;
+mod macros;
 mod path;
 
 const SEP: char = std::path::MAIN_SEPARATOR;

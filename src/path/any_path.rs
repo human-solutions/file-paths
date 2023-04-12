@@ -1,8 +1,33 @@
-use std::{path::PathBuf, str::Chars};
+use crate::{inner::PathInner, iter::Segments, try_from};
+use anyhow::Result;
+use std::{
+    ops::{Deref, DerefMut},
+    path::PathBuf,
+    str::Chars,
+};
 
-use crate::{inner::PathInner, iter::Segments};
+pub trait PushSeg: DerefMut<Target = PathInner> {
+    fn push(&mut self, segment: &str) -> Result<()> {
+        self.deref_mut().push_segment(segment)
+    }
+}
 
 pub struct AnyPath(PathInner);
+
+impl Deref for AnyPath {
+    type Target = PathInner;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+impl DerefMut for AnyPath {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl PushSeg for AnyPath {}
 
 impl AnyPath {
     pub fn segments(&self) -> Segments {
@@ -14,24 +39,4 @@ impl AnyPath {
     }
 }
 
-impl TryFrom<String> for AnyPath {
-    type Error = anyhow::Error;
-    fn try_from(value: String) -> Result<Self, Self::Error> {
-        Ok(Self(PathInner::new(&value)?))
-    }
-}
-
-impl TryFrom<&str> for AnyPath {
-    type Error = anyhow::Error;
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        Ok(Self(PathInner::new(value)?))
-    }
-}
-
-impl TryFrom<PathBuf> for AnyPath {
-    type Error = anyhow::Error;
-
-    fn try_from(value: PathBuf) -> Result<Self, Self::Error> {
-        Ok(Self(PathInner::new_from_path(&value)?))
-    }
-}
+try_from!(AnyPath);

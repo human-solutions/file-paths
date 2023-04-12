@@ -1,20 +1,16 @@
-use std::{
-    fmt::{Debug, Display},
-    path::Path,
-    str::Chars,
-};
+use std::path::Path;
 
 use anyhow::{ensure, Result};
 
 use crate::{
     ext::{PathExt, StrExt},
-    iter::{InnerSegmentIter, Segments},
+    iter::InnerSegmentIter,
     SEP, SLASH,
 };
 
 use super::{envs::contract_envs, expand_envs};
 
-pub(crate) struct PathInner {
+pub struct PathInner {
     /// an absolute path is guaranteed to start with
     /// - on win: `<drive-letter>:\` or `\`
     /// - on *nix: `/`
@@ -23,33 +19,6 @@ pub(crate) struct PathInner {
     pub(crate) path: String,
 }
 
-impl AsRef<Path> for PathInner {
-    fn as_ref(&self) -> &Path {
-        Path::new(&self.path)
-    }
-}
-
-impl Display for PathInner {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let (chr, path) = self.as_contracted(!f.alternate());
-        if let Some(chr) = chr {
-            write!(f, "{chr}{SEP}")?;
-        }
-        write!(f, "{path}")
-    }
-}
-
-impl Debug for PathInner {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let (chr, path) = self.as_contracted(!f.alternate());
-        #[cfg(windows)]
-        let path = path.replace('/', "\\");
-        if let Some(chr) = chr {
-            write!(f, "{chr}{SEP}")?;
-        }
-        write!(f, "{path}")
-    }
-}
 impl PathInner {
     pub(crate) fn empty() -> Self {
         Self {
@@ -82,7 +51,7 @@ impl PathInner {
         Self::new(path.try_to_str()?)
     }
 
-    fn as_contracted(&self, do_contract: bool) -> (Option<char>, &str) {
+    pub(super) fn as_contracted(&self, do_contract: bool) -> (Option<char>, &str) {
         if do_contract && self.is_absolute() {
             match contract_envs(&self.path) {
                 Ok(s) => s,
@@ -121,10 +90,10 @@ impl PathInner {
         }
     }
 
-    fn push_segment(&mut self, segment: &str) -> Result<()> {
+    pub(crate) fn push_segment(&mut self, segment: &str) -> Result<()> {
         segment.assert_allowed_path_component()?;
         if !self.path.is_empty() && !self.path.ends_with(SEP) {
-            self.path.push(crate::SEP);
+            self.path.push(SEP);
         }
         self.path.push_str(segment);
         ensure!(
@@ -132,13 +101,5 @@ impl PathInner {
             "path segments must be less than 255 characters, not: {segment}"
         );
         Ok(())
-    }
-
-    pub fn chars(&self) -> Chars {
-        self.path.chars()
-    }
-
-    pub fn segments(&self) -> Segments {
-        Segments::new(self.relative_part())
     }
 }
