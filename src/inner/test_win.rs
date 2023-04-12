@@ -129,9 +129,9 @@ fn exp_envs() {
         "environment variable 'FAIL' is not defined"
     );
 
-    assert_eq!(exp_ok("."), "C:\\dir\\test\\");
-    assert_eq!(exp_ok(".\\"), "C:\\dir\\test\\");
-    assert_eq!(exp_ok(".\\di"), "C:\\dir\\test\\di");
+    assert_eq!(exp_ok("."), "C:\\current\\");
+    assert_eq!(exp_ok(".\\"), "C:\\current\\");
+    assert_eq!(exp_ok(".\\di"), "C:\\current\\di");
 
     assert_eq!(exp_ok("~"), "C:\\User\\test\\");
     // the double ending slash is ok at expansion stage as it is removed later

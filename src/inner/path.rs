@@ -105,9 +105,9 @@ impl PathInner {
         {
             if self.path.starts_with(SEP) {
                 &self.path[1..]
-            } else if self.path.len() > 3 && &self.path[1..3] == ":\\" {
+            } else if self.path.len() >= 3 && &self.path[1..3] == ":\\" {
                 &self.path[3..]
-            } else if self.path.len() > 2 && &self.path[1..2] == ":" {
+            } else if self.path.len() >= 2 && &self.path[1..2] == ":" {
                 &self.path[2..]
             } else {
                 self.path.as_ref()
