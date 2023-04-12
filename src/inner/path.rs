@@ -121,7 +121,7 @@ impl PathInner {
 
     fn push_segment(&mut self, segment: &str) -> Result<()> {
         segment.assert_allowed_path_component()?;
-        if !self.path.is_empty() && !(self.path.len() == 1 && self.path.starts_with(SEP)) {
+        if !self.path.is_empty() && !self.path.ends_with(SEP) {
             self.path.push(crate::SEP);
         }
         self.path.push_str(segment);

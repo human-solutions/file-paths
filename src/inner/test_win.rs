@@ -55,7 +55,7 @@ fn test_home_path_inner() {
     let p1 = PathInner::new("~\\di").unwrap();
     let segs: Vec<&str> = p1.segments().collect();
 
-    assert_eq!(p1.path, "\\home\\test\\di");
+    assert_eq!(p1.path, "C:\\User\\test\\di");
     assert_eq!(segs, vec!["home", "test", "di"]);
     assert_eq!(format!("{p1}"), "~\\di");
     assert_eq!(p1.is_absolute(), true);
@@ -67,7 +67,7 @@ fn test_cwd_path_inner() {
     let p1 = PathInner::new(".\\di").unwrap();
     let segs: Vec<&str> = p1.segments().collect();
 
-    assert_eq!(p1.path, "\\var\\test\\di");
+    assert_eq!(p1.path, "C:\\var\\test\\di");
     assert_eq!(segs, vec!["va", "test", "di"]);
     assert_eq!(format!("{p1}"), ".\\di");
     assert_eq!(p1.is_absolute(), true);

@@ -1,6 +1,8 @@
 use std::iter::Peekable;
 use std::str::Split;
 
+use crate::SLASH;
+
 pub struct InnerSegmentIter<'a> {
     iter: Peekable<Split<'a, [char; 2]>>,
 }
@@ -8,7 +10,7 @@ pub struct InnerSegmentIter<'a> {
 impl<'a> InnerSegmentIter<'a> {
     pub(crate) fn new(path: &'a str) -> Self {
         Self {
-            iter: path.split(['/', '\\']).peekable(),
+            iter: path.split(SLASH).peekable(),
         }
     }
 }
