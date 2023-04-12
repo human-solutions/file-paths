@@ -1,4 +1,4 @@
-use crate::inner::PathInner;
+use crate::SLASH;
 
 #[derive(Debug)]
 pub struct Segments<'a> {
@@ -10,10 +10,9 @@ pub struct Segments<'a> {
 }
 
 impl<'a> Segments<'a> {
-    pub(crate) fn new(path: &'a PathInner) -> Self {
-        let path = path.relative_part();
+    pub(crate) fn new(path: &'a str) -> Self {
         let lengths = path
-            .split('/')
+            .split(SLASH)
             .filter(|s| !s.is_empty())
             .map(|s| s.len())
             .collect();
@@ -82,6 +81,9 @@ impl<'a> DoubleEndedIterator for Segments<'a> {
         Some(&self.path[start..end])
     }
 }
+
+#[cfg(test)]
+use crate::inner::PathInner;
 
 #[test]
 fn test_path_iter() {

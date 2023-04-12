@@ -107,6 +107,8 @@ impl PathInner {
                 &self.path[1..]
             } else if self.path.len() > 3 && &self.path[1..3] == ":\\" {
                 &self.path[3..]
+            } else if self.path.len() > 2 && &self.path[1..2] == ":" {
+                &self.path[2..]
             } else {
                 self.path.as_ref()
             }
@@ -137,6 +139,6 @@ impl PathInner {
     }
 
     pub fn segments(&self) -> Segments {
-        Segments::new(self)
+        Segments::new(self.relative_part())
     }
 }
