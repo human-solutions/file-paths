@@ -45,12 +45,12 @@ Use one of the below to communicate what your function or API expects.
 
 |     | Any       | Dir          | File          |
 | --- | ---       | ---          | ---           |
-| Any | [AnyPath] | [DirPath]    | [FilePath]    |
-| Rel | [RelPath] | [RelDirPath] | [RelFilePath] |
-| Abs | [AbsPath] | [AbsDirPath] | [AbsFilePath] |
+| Any | [AnyPath] | [AnyDir]    | [AnyFile]    |
+| Rel | [RelPath] | [RelDir] | [RelFile] |
+| Abs | [AbsPath] | [AbsDir] | [AbsFile] |
  
 ```rust
-fn mirror(file: RelFilePath, from: AbsDirPath, to: AbsDirPath) {}
+fn mirror(file: RelFile, from: AbsDir, to: AbsDir) {}
 ```
 
 ## Readable and Testable
@@ -68,7 +68,7 @@ with the current working directory the replacement is `.`.
 #[test]
 fn test() -> anyhow::Result<()> {
     // imagine that the path string is read from a conf.toml file:
-    let dir = AbsDirPath::new(r"~/dir1//..\dir2");
+    let dir = AbsDir::new(r"~/dir1//..\dir2");
     
     //////// Display ////////
 
@@ -86,10 +86,10 @@ fn test() -> anyhow::Result<()> {
     //////// Debug ////////
     
     // using standard Debug
-    assert_eq!(format!("{dir:?}"), r#"AbsDirPath("~/dir2")"#);
+    assert_eq!(format!("{dir:?}"), r#"AbsDir("~/dir2")"#);
 
     // using alternative Debug
-    assert_eq!(format!("{dir:#?}", r#"AbsDirPath("/home/user/dir2")"#))
+    assert_eq!(format!("{dir:#?}", r#"AbsDir("/home/user/dir2")"#))
 }
 ```
 
@@ -119,8 +119,8 @@ Access the paths as `&str`, all paths implement:
 - Write config files using paths that work across platforms (as far as possible).
 - AnyPath for general use and specific ones when you need to assure that
 - Provide types distinguishing between Absolute or Relative and Directory or File:
-    - FilePath, FileAbsPath, FileRelPath
-    - DirPath, DirAbsPath, DirAbsPath
+    - AnyFile, AbsFile, RelFile
+    - AnyDir, AbsDir, AbsDir
 - Support for the major operating systems and file systems:
     - Linux & Unix: most file systems.
     - macOS: HFS+, APFS.
@@ -173,11 +173,15 @@ Forbidden in `strict` mode or when running on Windows:
 The path separators are kept in memory and displayed in a platform-native representation,
 i.e. using the platform where the binary is running. For Windows, it's `\` and for the others `/`.
 
-On Windows, any drive letters are kept upper-cased, and on the others, it is discarded.
+On Windows, all paths starts with the drive and the drive letter is upper-cased. When reading a
+path from a string, if the drive letter is missing, then the one in the current working directory
+is used.
+
+On other platforms, any drive letter and the following `:` are discarded.
 
 This means that a string written as either `C:\my\path` or `/my/path`
 is converted and stored in memory and displayed as:
-- Windows: `C:\my\path` when the current directory's drive letter is `c`
+- Windows: `C:\my\path` when the current directory's drive letter is `C`
 - Others: `/my/path`
 
 ## Path components
@@ -200,11 +204,11 @@ Path resolution is done without file-system access so that paths don't need to e
 | `/`                      | nix: `/`<br>win: `C:\`                   | -<br>current_dir() | - <br>win: `C:/somedir`                  | - <br> win: Same drive as the current dir
 | `c:/`, `C:/`             | nix: `/`<br>win: `C:\`                   |                    |                                          | nix: Drive letter removed<br>win: Drive letters always in upper case
 | `C:dir`                  | nix: `dir`<br>win: `C:dir` .             |                    |                                          |
-| `dir//dir`               | nix: `dir/dir`<br>win: `dir\dir`         |                    |                                          | Multiple slashes are joined
-| `dir/./dir`              | nix: `dir/dir`<br>win: `dir\dir`         |                    |                                          | Dots inside of a path are ignored
+| `dir//dir`               | nix: `dir/dir`<br>win: `C:dir\dir`       |                    |                                          | Multiple slashes are joined
+| `dir/./dir`              | nix: `dir/dir`<br>win: `C:dir\dir`       |                    |                                          | Dots inside of a path are ignored
 | `dir/..`                 |                                          |                    |                                          | Empty path
-| `dir1/dir2/..`           | `dir1`                                   |                    |                                          |
-| `${MYDIR}`,<br>`%MYDIR%` | `dir`                                    | var("MYDIR")       | `dir`                                    | See [Environment variables](#environment-variables)
+| `dir1/dir2/..`           | nix: `dir1`<br>win: `C:dir1`             |                    |                                          |
+| `${MYDIR}`,<br>`%MYDIR%` | nix: `dir`<br>win: `C:dir`               | var("MYDIR")       | `dir`                                    | See [Environment variables](#environment-variables)
 
 Legend:
 - <sup>*</sup> - Any `/` can also be `\`.

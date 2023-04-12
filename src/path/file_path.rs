@@ -1,3 +1,3 @@
 use crate::inner::PathInner;
 
-pub struct FilePath(PathInner);
+pub struct AnyFile(PathInner);
