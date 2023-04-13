@@ -33,7 +33,7 @@ impl Debug for PathInner {
         #[cfg(windows)]
         let path = super::drive::remove_win_drive(&path).replace('\\', "/");
         if let Some(chr) = chr {
-            write!(f, "{chr}{SEP}")?;
+            write!(f, "{chr}/")?;
         }
         write!(f, "{path}")
     }

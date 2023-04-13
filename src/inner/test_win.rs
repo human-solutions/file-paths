@@ -85,8 +85,8 @@ fn test_display() {
 fn test_debug() {
     let p1 = PathInner::new(".\\dir\\hi").unwrap();
 
-    assert_eq!(format!("{p1:?}"), ".\\dir\\hi");
-    assert_eq!(format!("{p1:#?}"), "\\current\\dir\\hi");
+    assert_eq!(format!("{p1:?}"), "./dir/hi");
+    assert_eq!(format!("{p1:#?}"), "/current/dir/hi");
 }
 
 #[test]
