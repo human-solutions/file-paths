@@ -43,10 +43,16 @@ fn itest_abs_dir() {
     "###);
 
     let val = err_json(r###" { "path1": "./doesntexist", "path2": "./dir1"  } "###);
+    #[cfg(not(windows))]
     assert_eq!(val, "dir doesn't exist: ./doesntexist at line 1 column 27");
+    #[cfg(windows)]
+    assert_eq!(val, "dir doesn't exist: .\\doesntexist at line 1 column 27");
 
     let val = err_json(r###" { "path1": "./Cargo.toml", "path2": "./dir1"  } "###);
+    #[cfg(not(windows))]
     assert_eq!(val, "not a directory: ./Cargo.toml at line 1 column 26");
+    #[cfg(windows)]
+    assert_eq!(val, "not a directory: .\\Cargo.toml at line 1 column 26");
 }
 
 fn err_json(s: &str) -> String {
