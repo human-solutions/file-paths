@@ -9,7 +9,7 @@ Please don't edit. This document has been generated from "src/readme.tpl.md"
     - [Clear expectations](#clear-expectations)
     - [Readable and Testable](#readable-and-testable)
     - [Cross-platform](#cross-platform)
-    - [Convenient](#convenient)
+    - [Convenience](#convenience)
 - [Design goals](#design-goals)
 - [Limitations](#limitations)
     - [Characters](#characters)
@@ -19,6 +19,8 @@ Please don't edit. This document has been generated from "src/readme.tpl.md"
 - [Path resolution](#path-resolution)
 - [Environment variables](#environment-variables)
 - [Path comparison](#path-comparison)
+- [Functions](#functions)
+    - [Conversions between X-Path types](#conversions-between-x-path-types)
 - [References](#references)
 
 
@@ -103,7 +105,7 @@ On Windows, the NTFS, VFAT and exFAT restrictions are applied which are
 much more stringent than the Unix ones. Enable the feature `strict` if
 you want the same restrictions applied when running on Unix.
 
-## Convenient
+## Convenience
 
 Access the paths as `&str`, all paths implement:
 - [Display](std::fmt::Display) for easy display.
@@ -242,6 +244,63 @@ Returns an error:
 # Path comparison
 
 While paths preserve casing when kept in memory comparing is done in a case-insensitive manner.
+
+# Functions
+
+Any function starting with:
+
+- `.with_` means that a clone is returned with an updated value.
+- `.to_` means that the value is converted into another type.
+- `.set_` means that it is modified in place.
+- `.as_` means that it's cheaply borrowed as another type
+
+
+## Conversions between X-Path types
+
+- Path:
+    - `.as_rel`, `as_abs` optionally returns the more specific type based on if the path is absolute or relative (no fs check)
+    - `.as_file`, `.as_dir` changes type without verification
+    - `.try_to_file`, `.try_to_dir` changes type with fs verification
+
+
+
+|          | AnyPath | AnyDir  | AnyFile  | RelPath | RelDir  | RelFile | AbsPath  | AbsDir      | AbsFile
+| ---      | ---     | ---     | ---      | ---     | ---     | ---     | ---      | ---         | ---
+| AnyPath  | -       | .as_dir | .as_file | .as_rel |         |         | .as_abs
+| AnyDir   | .as_any | -       |          |         | .as_rel |         | .as_path | .with_root  |
+| AnyFile
+| RelPath
+| RelDir
+| RelFile
+| AbsPath
+| AbsDir
+| AbsFile
+
+Functions provided per type.
+
+- All:
+    - `.as_str`, gives access to &str funcs incl. `.chars`, `.starts_with`, `.ends_with`
+    - `.as_path`, gives access to Path funcs incl. `.metadata`, `is_symlink`
+    - `.segments`, `.with_segments`, `.set_segments`. For segments starting from the end use `.segments` + `.rev`.
+    - `.exists`
+- Any (AnyDir, AnyFile, AnyPath):
+    - `.is_rel`, `.is_abs`
+    - `.as_rel`, `.as_abs` optionally convert into relative or absolute.
+    - `.as_file`, `.as_dir` convert into file/dir without verifications
+    - `.try_to_file`, `.try_to_dir` convert into file/dir with filesystem verification.
+- Abs (AbsFile, AbsDir, AbsPath):
+    - `.remove_root`
+    - `.to_rel_from`
+    - `.as_file`, `.as_dir`
+- Rel:
+    - `.with_root`
+    - `.as_file`, `.as_dir`
+- Dir:
+    - `.push`, `.pushing`
+- File:
+    - `.file_name`, `.with_file_name`, `.set_file_name`, `.file_stem`, `.with_file_stem`, `.set_file_stem`
+    - `.extensions`: iterator over extensions
+    - `.set_extensions`, `.with_extensions`: set extensions from any IntoIter<str>
 
 # References
 

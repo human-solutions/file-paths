@@ -3,6 +3,6 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(transparent)]
-pub struct AnyDir(pub(crate) PathInner);
+pub struct AnyFile(pub(crate) PathInner);
 
-try_from!(AnyDir);
+try_from!(AnyFile);

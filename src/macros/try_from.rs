@@ -1,3 +1,4 @@
+/// implement TryFrom\<String\>, TryFrom<&str>, TryFrom\<PathBuf\>
 #[macro_export]
 macro_rules! try_from {
     ($struct:ident) => {
@@ -15,10 +16,10 @@ macro_rules! try_from {
             }
         }
 
-        impl TryFrom<PathBuf> for $struct {
+        impl TryFrom<std::path::PathBuf> for $struct {
             type Error = anyhow::Error;
 
-            fn try_from(value: PathBuf) -> Result<Self, Self::Error> {
+            fn try_from(value: std::path::PathBuf) -> Result<Self, Self::Error> {
                 Ok(Self(PathInner::new_from_path(&value)?))
             }
         }

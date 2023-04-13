@@ -44,7 +44,7 @@ impl<'a> Iterator for Segments<'a> {
         let end = start + self.lengths[pos] as usize;
         self.start = end + 1;
 
-        println!(">> {start}..{end} - {}", self.path.len());
+        // println!(">> {start}..{end} - {}", self.path.len());
         Some(&self.path[start..end])
     }
 

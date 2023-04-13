@@ -3,6 +3,8 @@ use std::{
     path::Path,
 };
 
+use serde::Serialize;
+
 use crate::SEP;
 
 use super::PathInner;
@@ -33,5 +35,19 @@ impl Debug for PathInner {
             write!(f, "{chr}{SEP}")?;
         }
         write!(f, "{path}")
+    }
+}
+
+pub trait TryExist<T>: Sized {
+    /// Performs the conversion.
+    fn try_exist(value: T) -> anyhow::Result<Self>;
+}
+
+impl Serialize for PathInner {
+    fn serialize<S>(&self, ser: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        ser.serialize_str(&format!("{self:?}"))
     }
 }

@@ -1,42 +1,53 @@
-use crate::{inner::PathInner, iter::Segments, try_from};
+use crate::{all_paths, inner::PathInner, try_from, AbsPath, AnyDir, AnyFile, RelPath};
 use anyhow::Result;
-use std::{
-    ops::{Deref, DerefMut},
-    path::PathBuf,
-    str::Chars,
-};
+use serde::{Deserialize, Serialize};
 
-pub trait PushSeg: DerefMut<Target = PathInner> {
-    fn push(&mut self, segment: &str) -> Result<()> {
-        self.deref_mut().push_segment(segment)
-    }
-}
-
-pub struct AnyPath(PathInner);
-
-impl Deref for AnyPath {
-    type Target = PathInner;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-impl DerefMut for AnyPath {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-impl PushSeg for AnyPath {}
-
-impl AnyPath {
-    pub fn segments(&self) -> Segments {
-        self.0.segments()
-    }
-
-    pub fn chars(&self) -> Chars {
-        self.0.chars()
-    }
-}
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct AnyPath(pub(crate) PathInner);
 
 try_from!(AnyPath);
+all_paths!(AnyPath);
+
+pub enum PathStart {
+    Abs(AbsPath),
+    Rel(RelPath),
+}
+
+impl AnyPath {
+    pub fn is_abs(&self) -> bool {
+        self.0.is_absolute()
+    }
+
+    pub fn is_rel(&self) -> bool {
+        !self.0.is_absolute()
+    }
+
+    pub fn to_abs_or_rel(self) -> PathStart {
+        match self.is_abs() {
+            true => PathStart::Abs(AbsPath(self.0)),
+            false => PathStart::Rel(RelPath(self.0)),
+        }
+    }
+
+    pub fn to_abs(self) -> Option<AbsPath> {
+        match self.is_abs() {
+            true => Some(AbsPath(self.0)),
+            false => None,
+        }
+    }
+
+    pub fn to_rel(self) -> Option<RelPath> {
+        match self.is_abs() {
+            true => None,
+            false => Some(RelPath(self.0)),
+        }
+    }
+    pub fn to_file(self) -> AnyFile {
+        AnyFile(self.0)
+    }
+
+    pub fn to_dir(self) -> AnyDir {
+        AnyDir(self.0)
+    }
+}

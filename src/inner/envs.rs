@@ -27,12 +27,14 @@ impl Start {
 }
 
 pub(crate) fn contract_envs<'a>(path: &'a str) -> Result<(Option<char>, &'a str)> {
-    Ok(if let Some(path) = remove_abs_start(path, &home_dir()?) {
-        (Some('~'), path)
-    } else if let Some(path) = remove_abs_start(path, &current_dir()?) {
-        (Some('.'), path)
-    } else {
-        (None, path)
+    let home_rel = remove_abs_start(path, &home_dir()?);
+    let cwd_rel = remove_abs_start(path, &current_dir()?);
+    Ok(match (home_rel, cwd_rel) {
+        (Some(home), Some(cwd)) if home.len() < cwd.len() => (Some('~'), home),
+        (Some(_), Some(cwd)) => (Some('.'), cwd),
+        (Some(home), None) => (Some('~'), home),
+        (None, Some(cwd)) => (Some('.'), cwd),
+        (None, None) => (None, path),
     })
 }
 

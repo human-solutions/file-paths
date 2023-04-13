@@ -11,3 +11,4 @@ mod traits;
 
 pub(crate) use envs::expand_envs;
 pub(crate) use path::PathInner;
+pub use traits::TryExist;

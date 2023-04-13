@@ -1,6 +1,7 @@
 use std::path::Path;
 
 use anyhow::{ensure, Result};
+use serde::Deserialize;
 
 use crate::{
     ext::{PathExt, StrExt},
@@ -10,6 +11,8 @@ use crate::{
 
 use super::{envs::contract_envs, expand_envs};
 
+#[derive(Clone, Deserialize)]
+#[serde(transparent)]
 pub struct PathInner {
     /// an absolute path is guaranteed to start with
     /// - on win: `<drive-letter>:\` or `\`
