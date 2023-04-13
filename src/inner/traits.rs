@@ -31,7 +31,7 @@ impl Debug for PathInner {
         let (chr, path) = self.as_contracted(!f.alternate());
 
         #[cfg(windows)]
-        let path = super::drive::remove_win_drive(&path).replace('/', "\\");
+        let path = super::drive::remove_win_drive(&path).replace('\\', "/");
         if let Some(chr) = chr {
             write!(f, "{chr}{SEP}")?;
         }
