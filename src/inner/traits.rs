@@ -30,7 +30,7 @@ impl Debug for PathInner {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let (chr, path) = self.as_contracted(!f.alternate());
         #[cfg(windows)]
-        let path = path.replace('/', "\\");
+        let path = super::drive::remove_win_drive(&path.replace('\\', "/"));
         if let Some(chr) = chr {
             write!(f, "{chr}{SEP}")?;
         }
