@@ -39,10 +39,10 @@ pub fn current_drive() -> Result<char> {
 
 #[cfg(windows)]
 pub fn current_drive() -> Result<char> {
-    use crate::os::current_dir;
+    use crate::ext::PathBufExt;
     use anyhow::bail;
 
-    let cwd = current_dir()?;
+    let cwd = std::env::current_dir()?.try_to_string()?;
     match win_drive(&cwd) {
         Some(drive) => Ok(drive),
         None => bail!("could not extract drive letter from {cwd}"),
