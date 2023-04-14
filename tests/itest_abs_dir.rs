@@ -22,8 +22,12 @@ fn itest_abs_dir() {
 
     // let m = x_path::any_path::validated;
     assert_eq!(segs, vec!["dir1", "dir2"]);
-    assert_eq!(format!("{p:?}"), "AbsDir(\"/dir1/dir2\")");
+    assert_eq!(format!("{p:?}"), "AbsDir(/dir1/dir2)");
+}
 
+#[test]
+fn i_abs_dir_json() {
+    let p = AbsDir::try_from("/dir1/dir2").unwrap();
     assert_eq!(serde_json::to_string(&p).unwrap(), r#""/dir1/dir2""#);
 
     let exp_p = ExpandPathTest {

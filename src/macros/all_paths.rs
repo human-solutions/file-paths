@@ -24,12 +24,11 @@ macro_rules! all_paths {
 
         impl std::fmt::Debug for $struct {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                let path = if f.alternate() {
-                    format!("{:#?}", self.0)
+                if f.alternate() {
+                    write!(f, "{}({:#?})", stringify!($struct), self.0)
                 } else {
-                    format!("{:?}", self.0)
-                };
-                f.debug_tuple(stringify!($struct)).field(&path).finish()
+                    write!(f, "{}({:#?})", stringify!($struct), self.0)
+                }
             }
         }
     };
