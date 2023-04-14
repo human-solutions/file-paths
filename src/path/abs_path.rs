@@ -13,6 +13,11 @@ serde_exist!(AbsPath);
 serde_expanded!(AbsPath);
 
 impl AbsPath {
+    pub(crate) fn validate(self) -> Result<Self> {
+        ensure!(self.0.is_absolute(), "path is not absolute: {self}");
+        Ok(self)
+    }
+
     pub fn exists(&self) -> Result<()> {
         let p = self.0.as_path();
         ensure!(p.exists(), "path doesn't exist: {}", self.0);

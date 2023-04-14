@@ -20,9 +20,21 @@ fn itest_abs_dir() {
 
     let segs = p.segments().collect::<Vec<_>>();
 
-    // let m = x_path::any_path::validated;
     assert_eq!(segs, vec!["dir1", "dir2"]);
     assert_eq!(format!("{p:?}"), "AbsDir(/dir1/dir2)");
+    assert_eq!(
+        p.exists().unwrap_err().to_string(),
+        "dir doesn't exist: /dir1/dir2"
+    );
+
+    let p_src = AbsDir::try_from("./src").unwrap();
+    assert!(p_src.exists().is_ok());
+
+    let p_not = AbsDir::try_from("some/rel");
+    assert_eq!(
+        p_not.unwrap_err().to_string(),
+        "path is not absolute: some/rel"
+    );
 }
 
 #[test]

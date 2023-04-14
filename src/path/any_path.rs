@@ -6,8 +6,8 @@ use serde::{Deserialize, Serialize};
 #[serde(transparent)]
 pub struct AnyPath(pub(crate) PathInner);
 
-try_from!(AnyPath);
 all_paths!(AnyPath);
+try_from!(AnyPath);
 
 pub enum PathStart {
     Abs(AbsPath),
@@ -49,5 +49,9 @@ impl AnyPath {
 
     pub fn to_dir(self) -> AnyDir {
         AnyDir(self.0)
+    }
+
+    pub(crate) fn validate(self) -> Result<Self> {
+        Ok(self)
     }
 }

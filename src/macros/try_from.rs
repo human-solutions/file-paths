@@ -5,14 +5,14 @@ macro_rules! try_from {
         impl TryFrom<String> for $struct {
             type Error = anyhow::Error;
             fn try_from(value: String) -> Result<Self, Self::Error> {
-                Ok(Self(PathInner::new(&value)?))
+                Self(PathInner::new(&value)?).validate()
             }
         }
 
         impl TryFrom<&str> for $struct {
             type Error = anyhow::Error;
             fn try_from(value: &str) -> Result<Self, Self::Error> {
-                Ok(Self(PathInner::new(value)?))
+                Self(PathInner::new(value)?).validate()
             }
         }
 
@@ -20,7 +20,7 @@ macro_rules! try_from {
             type Error = anyhow::Error;
 
             fn try_from(value: std::path::PathBuf) -> Result<Self, Self::Error> {
-                Ok(Self(PathInner::new_from_path(&value)?))
+                Self(PathInner::new_from_path(&value)?).validate()
             }
         }
     };

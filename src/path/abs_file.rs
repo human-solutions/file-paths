@@ -13,6 +13,11 @@ serde_exist!(AbsFile);
 serde_expanded!(AbsFile);
 
 impl AbsFile {
+    pub(crate) fn validate(self) -> Result<Self> {
+        ensure!(self.0.is_absolute(), "path is not absolute: {self}");
+        Ok(self)
+    }
+
     pub fn exists(&self) -> Result<()> {
         let p = self.0.as_path();
         ensure!(p.exists(), "file doesn't exist: {}", self.0);
