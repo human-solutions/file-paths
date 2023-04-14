@@ -17,11 +17,10 @@ impl OsGroup for WinOS {
     }
 
     fn drive_letter() -> Result<char> {
-        use crate::ext::PathBufExt;
         use anyhow::bail;
 
         let cwd = std::env::current_dir()?.try_to_string()?;
-        match win_drive(&cwd) {
+        match crate::os::drive::win_drive(&cwd) {
             Some(drive) => Ok(drive),
             None => bail!("could not extract drive letter from {cwd}"),
         }
