@@ -22,15 +22,23 @@ fn itest_abs_dir() {
 
     assert_eq!(segs, vec!["dir1", "dir2"]);
     assert_eq!(format!("{p:?}"), "AbsDir(/dir1/dir2)");
-    assert_eq!(
-        p.exists().unwrap_err().to_string(),
-        "dir doesn't exist: /dir1/dir2"
-    );
+
+    #[cfg(not(windows))]
+    const ERR_STR: &str = "dir doesn't exist: /dir1/dir2";
+    #[cfg(windows)] // looks like GitHub CI uses D:
+    const ERR_STR: &str = "dir doesn't exist: D:\\dir1\\dir2";
+
+    assert_eq!(p.exists().unwrap_err().to_string(), ERR_STR);
 
     let p_src = AbsDir::try_from("./src").unwrap();
     assert!(p_src.exists().is_ok());
 
     let p_not = AbsDir::try_from("some/rel");
+    // #[cfg(not(windows))]
+    // const ERR_STR: &str = "path is not absolute: some/rel";
+    // #[cfg(windows)] // looks like GitHub CI uses D:
+    // const ERR_STR: &str = "path is not absolute: some/rel";
+
     assert_eq!(
         p_not.unwrap_err().to_string(),
         "path is not absolute: some/rel"

@@ -9,7 +9,7 @@
 //! ## Config files
 //!
 //! The paths below are valid on any platform. They will be cleaned
-//! and have environment variables resolved at load.
+//! and have environment variables resolved when read.
 //!
 //! ```toml
 //! dir1 = "~/mydir/${SOME_ENV}/../"
@@ -20,9 +20,9 @@
 //!
 //! Use one of the below to communicate what your function or API expects.
 //!
-//! |     | Any       | Dir          | File          |
-//! | --- | ---       | ---          | ---           |
-//! | Any | [AnyPath] | [AnyDir]    | [AnyFile]    |
+//! |     | Any       | Dir      | File      |
+//! | --- | ---       | ---      | ---       |
+//! | Any | [AnyPath] | [AnyDir] | [AnyFile] |
 //! | Rel | [RelPath] | [RelDir] | [RelFile] |
 //! | Abs | [AbsPath] | [AbsDir] | [AbsFile] |
 //!  
@@ -36,8 +36,8 @@
 //!
 //! The [Display] implementation outputs the platform-native representation of
 //! a path, using the native path separator whereas the [Debug] implementation
-//! uses the `/` path separator and also includes the path type.
-//! Both for ease of testing.
+//! always uses the `/` path separator and also includes the path type. On windows
+//! it removes the `<drive>:` prefix
 //!
 //! By default, the paths are contracted, meaning that if the path starts with
 //! user home dir then the former that part is replaced with `~` and if it starts
