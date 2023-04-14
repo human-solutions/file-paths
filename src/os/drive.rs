@@ -1,7 +1,5 @@
 #![allow(dead_code)]
 
-use anyhow::Result;
-
 pub(super) fn remove_win_drive<'a>(path: &'a str) -> &'a str {
     if has_drive(path) {
         &path[2..]
@@ -10,14 +8,14 @@ pub(super) fn remove_win_drive<'a>(path: &'a str) -> &'a str {
     }
 }
 
-pub(super) fn add_win_drive<'a>(path: &'a str, to: &mut String) -> Result<&'a str> {
+pub(super) fn add_win_drive<'a>(path: &'a str, drive: char, to: &mut String) -> &'a str {
     let (path, drive) = match win_drive(path) {
         Some(drive) => (&path[2..], drive),
-        None => (path, current_drive()?),
+        None => (path, drive),
     };
     to.push(drive);
     to.push(':');
-    Ok(path)
+    path
 }
 
 pub fn has_drive(path: &str) -> bool {
@@ -29,22 +27,5 @@ pub fn win_drive(path: &str) -> Option<char> {
         Some(path.chars().next().unwrap().to_ascii_uppercase())
     } else {
         None
-    }
-}
-
-#[cfg(not(windows))]
-pub fn current_drive() -> Result<char> {
-    Ok('C')
-}
-
-#[cfg(windows)]
-pub fn current_drive() -> Result<char> {
-    use crate::ext::PathBufExt;
-    use anyhow::bail;
-
-    let cwd = std::env::current_dir()?.try_to_string()?;
-    match win_drive(&cwd) {
-        Some(drive) => Ok(drive),
-        None => bail!("could not extract drive letter from {cwd}"),
     }
 }

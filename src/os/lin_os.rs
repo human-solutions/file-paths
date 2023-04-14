@@ -16,6 +16,10 @@ impl OsGroup for LinOS {
         Ok(std::env::current_dir()?.try_to_string()?)
     }
 
+    fn drive_letter() -> Result<char> {
+        Ok('C')
+    }
+
     fn is_absolute(path: &str) -> bool {
         super::is_absolute_lin(path)
     }

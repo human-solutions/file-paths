@@ -31,6 +31,7 @@ pub(crate) trait OsGroup {
 
     fn home() -> Result<String>;
     fn current() -> Result<String>;
+    fn drive_letter() -> Result<char>;
 
     fn contract<'a>(path: &'a str) -> Result<(Option<char>, &'a str)> {
         let home_rel = Self::remove_abs_start(path, &Self::home()?);

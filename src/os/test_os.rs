@@ -16,6 +16,10 @@ impl OsGroup for LinTestOS {
         Ok(String::from("/home/test"))
     }
 
+    fn drive_letter() -> Result<char> {
+        Ok('C')
+    }
+
     fn is_absolute(path: &str) -> bool {
         super::is_absolute_lin(path)
     }
@@ -41,7 +45,8 @@ impl OsGroup for WinTestOS {
         super::relative_part_win(path)
     }
     fn process_drive_letter<'a>(path: &'a str, inner: &mut String) -> Result<&'a str> {
-        add_win_drive(path, inner)
+        let drive = Self::drive_letter()?;
+        Ok(add_win_drive(path, drive, inner))
     }
 
     fn current() -> anyhow::Result<String> {
@@ -49,5 +54,8 @@ impl OsGroup for WinTestOS {
     }
     fn home() -> anyhow::Result<String> {
         Ok(String::from(r"C:\User\test\"))
+    }
+    fn drive_letter() -> Result<char> {
+        Ok('C')
     }
 }

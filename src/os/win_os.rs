@@ -16,6 +16,17 @@ impl OsGroup for WinOS {
         Ok(std::env::current_dir()?.try_to_string()?)
     }
 
+    fn drive_letter() -> Result<char> {
+        use crate::ext::PathBufExt;
+        use anyhow::bail;
+
+        let cwd = std::env::current_dir()?.try_to_string()?;
+        match win_drive(&cwd) {
+            Some(drive) => Ok(drive),
+            None => bail!("could not extract drive letter from {cwd}"),
+        }
+    }
+
     fn is_absolute(path: &str) -> bool {
         super::is_absolute_win(path)
     }
@@ -25,7 +36,8 @@ impl OsGroup for WinOS {
     }
 
     fn process_drive_letter<'a>(path: &'a str, inner: &mut String) -> Result<&'a str> {
-        super::drive::add_win_drive(path, inner)
+        let drive = Self::drive_letter()?;
+        Ok(super::drive::add_win_drive(path, drive, inner))
     }
 }
 
