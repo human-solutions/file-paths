@@ -2,11 +2,9 @@ use std::borrow::Cow;
 
 use anyhow::{ensure, Context, Result};
 
-use crate::{
-    env::{current_dir, env_var, home_dir},
-    ext::CharExt,
-    SEP, SLASH,
-};
+use crate::{ext::CharExt, os::env, SLASH};
+
+use crate::os::OsGroup;
 
 enum Start {
     Home,
@@ -25,37 +23,12 @@ impl Start {
         }
     }
 }
-
-pub(crate) fn contract_envs<'a>(path: &'a str) -> Result<(Option<char>, &'a str)> {
-    let home_rel = remove_abs_start(path, &home_dir()?);
-    let cwd_rel = remove_abs_start(path, &current_dir()?);
-    Ok(match (home_rel, cwd_rel) {
-        (Some(home), Some(cwd)) if home.len() < cwd.len() => (Some('~'), home),
-        (Some(_), Some(cwd)) => (Some('.'), cwd),
-        (Some(home), None) => (Some('~'), home),
-        (None, Some(cwd)) => (Some('.'), cwd),
-        (None, None) => (None, path),
-    })
-}
-
-fn remove_abs_start<'a>(path: &'a str, start: &str) -> Option<&'a str> {
-    if path.starts_with(start) {
-        let mut pos = start.len();
-        if path[pos..].starts_with(SEP) {
-            pos += 1;
-        }
-        Some(&path[pos..])
-    } else {
-        None
-    }
-}
-
-pub(crate) fn expand_envs<'a>(path: &'a str) -> Result<Cow<str>> {
+pub(crate) fn expand<'a, OS: OsGroup>(path: &'a str) -> Result<Cow<str>> {
     let start = Start::from(&path);
 
     let path: Cow<str> = match start {
-        Start::Current => prefix_current_dir(&path[1..])?,
-        Start::Home => prefix_home_dir(&path[1..])?,
+        Start::Current => prefix_current_dir::<OS>(&path[1..])?,
+        Start::Home => prefix_home_dir::<OS>(&path[1..])?,
         Start::None if !path.contains(['$', '%']) => return Ok(Cow::Borrowed(path)),
         Start::None => Cow::Borrowed(path),
     };
@@ -92,7 +65,7 @@ pub(crate) fn expand_envs<'a>(path: &'a str) -> Result<Cow<str>> {
                             "empty environment variable in path: {path}"
                         );
 
-                        expanded.extend(env_var(&key[start..end])?.drain(..));
+                        expanded.extend(env::var(&key[start..end])?.drain(..));
                         key.clear();
                     }
                     break;
@@ -112,19 +85,19 @@ pub(crate) fn expand_envs<'a>(path: &'a str) -> Result<Cow<str>> {
     Ok(Cow::Owned(expanded))
 }
 
-fn prefix_current_dir<'a>(path: &'a str) -> Result<Cow<'a, str>> {
-    let mut cwd = current_dir().context("could not resolve the current working directory")?;
+fn prefix_current_dir<'a, P: OsGroup>(path: &'a str) -> Result<Cow<'a, str>> {
+    let mut cwd = P::current().context("could not resolve the current working directory")?;
     if !cwd.ends_with(SLASH) && !path.starts_with(SLASH) {
-        cwd.push(SEP);
+        cwd.push(P::SEP);
     }
     cwd.extend(path.chars());
     Ok(Cow::Owned(cwd))
 }
 
-fn prefix_home_dir<'a>(path: &'a str) -> Result<Cow<'a, str>> {
-    let mut home = home_dir().context("could not resolve the current working directory")?;
+fn prefix_home_dir<'a, P: OsGroup>(path: &'a str) -> Result<Cow<'a, str>> {
+    let mut home = P::home().context("could not resolve the current working directory")?;
     if !home.ends_with(SLASH) && !path.starts_with(SLASH) {
-        home.push(SEP);
+        home.push(P::SEP);
     }
     home.extend(path.chars());
     Ok(Cow::Owned(home))

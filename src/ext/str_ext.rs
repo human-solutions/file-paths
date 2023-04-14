@@ -1,25 +1,17 @@
+use crate::SLASH;
+
 use super::CharExt;
 
 use anyhow::{bail, ensure, Result};
 
-pub(crate) trait StrExt {
-    fn is_slash(&self) -> bool;
-    fn is_current_dir(&self) -> bool;
-    fn is_user_dir(&self) -> bool;
+pub(crate) trait PathStrExt {
+    fn is_absolute(&self) -> bool;
     fn assert_allowed_path_component(&self) -> Result<()>;
 }
 
-impl StrExt for str {
-    fn is_slash(&self) -> bool {
-        self == "/" || self == "\\"
-    }
-
-    fn is_current_dir(&self) -> bool {
-        self == "./" || self == ".\\" || self == "."
-    }
-
-    fn is_user_dir(&self) -> bool {
-        self == "~/" || self == "~\\" || self == "~"
+impl PathStrExt for str {
+    fn is_absolute(&self) -> bool {
+        self.starts_with(SLASH) || (self.len() >= 3 && [":/", ":\\"].contains(&&self[1..3]))
     }
 
     fn assert_allowed_path_component(&self) -> Result<()> {

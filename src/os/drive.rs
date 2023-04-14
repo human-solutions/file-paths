@@ -39,7 +39,7 @@ pub fn current_drive() -> Result<char> {
 
 #[cfg(windows)]
 pub fn current_drive() -> Result<char> {
-    use crate::env::current_dir;
+    use crate::os::current_dir;
     use anyhow::bail;
 
     let cwd = current_dir()?;

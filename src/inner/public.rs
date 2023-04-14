@@ -1,10 +1,10 @@
 use std::path::Path;
 
-use crate::iter::Segments;
+use crate::{iter::Segments, os::OsGroup};
 
 use super::PathInner;
 
-impl PathInner {
+impl<OS: OsGroup> PathInner<OS> {
     pub fn segments(&self) -> Segments {
         Segments::new(self.relative_part())
     }

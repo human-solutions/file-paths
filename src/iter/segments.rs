@@ -83,11 +83,11 @@ impl<'a> DoubleEndedIterator for Segments<'a> {
 }
 
 #[cfg(test)]
-use crate::inner::PathInner;
+use crate::{inner::PathInner, os::LinTestOS};
 
 #[test]
 fn test_path_iter() {
-    let path = PathInner::new("var/some/paths").unwrap();
+    let path = PathInner::<LinTestOS>::new("var/some/paths").unwrap();
 
     let mut iter = path.segments();
     assert_eq!(iter.next(), Some("var"));
@@ -104,7 +104,7 @@ fn test_path_iter() {
 
 #[test]
 fn test_abs_path_iter() {
-    let path = PathInner::new("/var/some/paths").unwrap();
+    let path = PathInner::<LinTestOS>::new("/var/some/paths").unwrap();
 
     let mut iter = path.segments();
     assert_eq!(iter.next(), Some("var"));

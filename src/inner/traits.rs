@@ -5,17 +5,17 @@ use std::{
 
 use serde::Serialize;
 
-use crate::SEP;
+use crate::{os::OsGroup, SEP};
 
 use super::PathInner;
 
-impl AsRef<Path> for PathInner {
+impl<OS: OsGroup> AsRef<Path> for PathInner<OS> {
     fn as_ref(&self) -> &Path {
         Path::new(&self.path)
     }
 }
 
-impl Display for PathInner {
+impl<OS: OsGroup> Display for PathInner<OS> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let (chr, path) = self.as_contracted(!f.alternate());
 
@@ -26,7 +26,7 @@ impl Display for PathInner {
     }
 }
 
-impl Debug for PathInner {
+impl<OS: OsGroup> Debug for PathInner<OS> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let (chr, path) = self.as_contracted(!f.alternate());
 
@@ -44,7 +44,7 @@ pub trait TryExist<T>: Sized {
     fn try_exist(value: T) -> anyhow::Result<Self>;
 }
 
-impl Serialize for PathInner {
+impl<OS: OsGroup> Serialize for PathInner<OS> {
     fn serialize<S>(&self, ser: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,

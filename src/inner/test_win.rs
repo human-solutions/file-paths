@@ -6,7 +6,7 @@ use super::expand_envs;
 
 #[test]
 fn test_abs_path_inner() {
-    let p1 = PathInner::new("/home/di").unwrap();
+    let p1 = PathInner::new_win("/home/di").unwrap();
     let segs: Vec<&str> = p1.segments().collect();
 
     assert_eq!(p1.path, "C:\\home\\di");
@@ -87,64 +87,4 @@ fn test_debug() {
 
     assert_eq!(format!("{p1:?}"), "./dir/hi");
     assert_eq!(format!("{p1:#?}"), "/current/dir/hi");
-}
-
-#[test]
-fn exp_envs() {
-    assert_eq!(exp_ok("$HI"), "$HI");
-
-    assert_eq!(exp_ok("${HI}"), "=hi=");
-    assert_eq!(exp_ok("\\${HI}"), "\\=hi=");
-    assert_eq!(exp_ok("\\${HI}\\"), "\\=hi=\\");
-
-    assert_eq!(exp_ok("%HI%"), "=hi=");
-    assert_eq!(exp_ok("\\%HI%"), "\\=hi=");
-    assert_eq!(exp_ok("\\%HI%\\"), "\\=hi=\\");
-
-    // not expanded
-    assert_eq!(exp_ok("\\s$HI$"), "\\s$HI$");
-    assert_eq!(exp_ok("\\%$HI"), "\\%$HI");
-    assert_eq!(exp_ok("\\${HI"), "\\${HI");
-    assert_eq!(exp_ok("\\${H-}"), "\\${H-}");
-    assert_eq!(exp_ok("\\${H}s"), "\\${H}s");
-    assert_eq!(exp_ok("\\%H%s"), "\\%H%s");
-    assert_eq!(exp_ok("\\$"), "\\$");
-
-    assert_eq!(exp_ok("\\dir1\\.\\dir2"), "\\dir1\\.\\dir2");
-    assert_eq!(exp_ok("dir1\\.\\dir2"), "dir1\\.\\dir2");
-
-    assert_eq!(exp_ok("\\dir1\\~\\dir2"), "\\dir1\\~\\dir2");
-    assert_eq!(exp_ok("dir1\\~\\dir2"), "dir1\\~\\dir2");
-
-    // errors
-    assert_eq!(exp_err("\\%%"), "empty environment variable in path: \\%%");
-
-    assert_eq!(
-        exp_err("\\${}"),
-        "empty environment variable in path: \\${}"
-    );
-
-    assert_eq!(
-        exp_err("\\${FAIL}"),
-        "environment variable 'FAIL' is not defined"
-    );
-
-    assert_eq!(exp_ok("."), "C:\\current\\");
-    assert_eq!(exp_ok(".\\"), "C:\\current\\");
-    assert_eq!(exp_ok(".\\di"), "C:\\current\\di");
-
-    assert_eq!(exp_ok("~"), "C:\\User\\test\\");
-    // the double ending slash is ok at expansion stage as it is removed later
-    assert_eq!(exp_ok("~\\"), "C:\\User\\test\\\\");
-    assert_eq!(exp_ok("~\\di"), "C:\\User\\test\\\\di");
-}
-
-#[cfg(test)]
-fn exp_ok(path: &str) -> Cow<str> {
-    expand_envs(path.into()).unwrap()
-}
-
-#[cfg(test)]
-fn exp_err(path: &str) -> String {
-    expand_envs(path.into()).unwrap_err().to_string()
 }

@@ -1,10 +1,11 @@
+use crate::os::CurrentOS;
 use crate::{all_paths, inner::PathInner, try_from, AbsPath, AnyDir, AnyFile, RelPath};
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(transparent)]
-pub struct AnyPath(pub(crate) PathInner);
+pub struct AnyPath(pub(crate) PathInner<CurrentOS>);
 
 all_paths!(AnyPath);
 try_from!(AnyPath);

@@ -287,11 +287,11 @@
 //! - [Naming Files, Paths, and Namespaces](https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file)
 //! - [Wikipedia: Filenames - Comparison of filename limitations](https://en.wikipedia.org/wiki/Filename#Comparison_of_filename_limitations)
 
-mod env;
 mod ext;
 mod inner;
 mod iter;
 mod macros;
+mod os;
 mod path;
 
 const SEP: char = std::path::MAIN_SEPARATOR;

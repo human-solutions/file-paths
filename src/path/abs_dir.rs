@@ -1,3 +1,4 @@
+use crate::os::CurrentOS;
 use crate::{
     all_paths, inner::PathInner, serde_exist, serde_expanded, try_exist, try_from, AbsFile, RelFile,
 };
@@ -6,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(transparent)]
-pub struct AbsDir(pub(crate) PathInner);
+pub struct AbsDir(pub(crate) PathInner<CurrentOS>);
 
 all_paths!(AbsDir);
 try_from!(AbsDir);

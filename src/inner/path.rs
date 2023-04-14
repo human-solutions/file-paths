@@ -1,43 +1,41 @@
-use std::path::Path;
+use std::{marker::PhantomData, path::Path};
 
 use anyhow::{ensure, Result};
 use serde::Deserialize;
 
 use crate::{
-    ext::{PathExt, StrExt},
+    ext::{PathExt, PathStrExt},
     iter::InnerSegmentIter,
+    os::{self, OsGroup},
     SEP, SLASH,
 };
 
-use super::{envs::contract_envs, expand_envs};
-
 #[derive(Clone, Deserialize)]
 #[serde(transparent)]
-pub struct PathInner {
+pub(crate) struct PathInner<OS: OsGroup> {
     /// an absolute path is guaranteed to start with
     /// - on win: `<drive-letter>:\` or `\`
     /// - on *nix: `/`
     /// a path is guaranteed to have one and only one
     /// path separator (win: `\`, otherwise: `/`) per segment
     pub(crate) path: String,
+    t: PhantomData<OS>,
 }
 
-impl PathInner {
+impl<OS: OsGroup> PathInner<OS> {
     pub(crate) fn empty() -> Self {
         Self {
             path: String::new(),
+            t: PhantomData,
         }
     }
 
     pub(crate) fn new(path: &str) -> Result<Self> {
         let mut inner = PathInner::empty();
 
-        let path = expand_envs(path)?;
+        let path = os::expand::<OS>(path)?;
 
-        #[cfg(windows)]
-        let path = super::drive::add_win_drive(&path, &mut inner.path)?;
-        #[cfg(not(windows))]
-        let path = super::drive::remove_win_drive(&path);
+        let path = OS::process_drive_letter(&path, &mut inner.path)?;
 
         if path.starts_with(SLASH) {
             inner.path.push(SEP)
@@ -56,7 +54,7 @@ impl PathInner {
 
     pub(super) fn as_contracted(&self, do_contract: bool) -> (Option<char>, &str) {
         if do_contract && self.is_absolute() {
-            match contract_envs(&self.path) {
+            match os::contract::<OS>(&self.path) {
                 Ok(s) => s,
                 Err(_) => (None, &self.path),
             }
@@ -66,31 +64,11 @@ impl PathInner {
     }
 
     pub(crate) fn is_absolute(&self) -> bool {
-        #[cfg(windows)]
-        return self.path.starts_with('\\') || (self.path.len() >= 3 && &self.path[1..3] == ":\\");
-        #[cfg(not(windows))]
-        return self.path.starts_with('/');
+        OS::is_absolute(&self.path)
     }
 
     pub(crate) fn relative_part(&self) -> &str {
-        #[cfg(windows)]
-        {
-            if self.path.starts_with(SEP) {
-                &self.path[1..]
-            } else if self.path.len() >= 3 && &self.path[1..3] == ":\\" {
-                &self.path[3..]
-            } else if self.path.len() >= 2 && &self.path[1..2] == ":" {
-                &self.path[2..]
-            } else {
-                self.path.as_ref()
-            }
-        }
-        #[cfg(not(windows))]
-        if self.path.starts_with(SEP) {
-            &self.path[1..]
-        } else {
-            self.path.as_ref()
-        }
+        OS::relative_part(&self.path)
     }
 
     pub(crate) fn push_segment(&mut self, segment: &str) -> Result<()> {
