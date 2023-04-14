@@ -7,7 +7,7 @@ use crate::{
     ext::{PathExt, PathStrExt},
     iter::InnerSegmentIter,
     os::{self, OsGroup},
-    SEP, SLASH,
+    SLASH,
 };
 
 #[derive(Clone, Deserialize)]
@@ -38,7 +38,7 @@ impl<OS: OsGroup> PathInner<OS> {
         let path = OS::process_drive_letter(&path, &mut inner.path)?;
 
         if path.starts_with(SLASH) {
-            inner.path.push(SEP)
+            inner.path.push(OS::SEP)
         }
         let mut iter = InnerSegmentIter::new(&path);
 
@@ -73,8 +73,8 @@ impl<OS: OsGroup> PathInner<OS> {
 
     pub(crate) fn push_segment(&mut self, segment: &str) -> Result<()> {
         segment.assert_allowed_path_component()?;
-        if !self.path.is_empty() && !self.path.ends_with(SEP) {
-            self.path.push(SEP);
+        if !self.path.is_empty() && !self.path.ends_with(OS::SEP) {
+            self.path.push(OS::SEP);
         }
         self.path.push_str(segment);
         ensure!(

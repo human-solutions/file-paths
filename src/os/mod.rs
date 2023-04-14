@@ -31,6 +31,49 @@ pub(crate) trait OsGroup {
 
     fn home() -> Result<String>;
     fn current() -> Result<String>;
+
+    fn contract<'a>(path: &'a str) -> Result<(Option<char>, &'a str)> {
+        let home_rel = Self::remove_abs_start(path, &Self::home()?);
+        let cwd_rel = Self::remove_abs_start(path, &Self::current()?);
+        Ok(match (home_rel, cwd_rel) {
+            (Some(home), Some(cwd)) if home.len() < cwd.len() => (Some('~'), home),
+            (Some(_), Some(cwd)) => (Some('.'), cwd),
+            (Some(home), None) => (Some('~'), home),
+            (None, Some(cwd)) => (Some('.'), cwd),
+            (None, None) => (None, path),
+        })
+    }
+    fn remove_abs_start<'a>(path: &'a str, start: &str) -> Option<&'a str> {
+        if path.starts_with(start) {
+            let mut pos = start.len();
+            if path[pos..].starts_with(Self::SEP) {
+                pos += 1;
+            }
+            Some(&path[pos..])
+        } else {
+            None
+        }
+    }
+
+    fn as_contracted(path: &str, do_contract: bool) -> (Option<char>, &str) {
+        if do_contract && Self::is_absolute(path) {
+            match Self::contract(path) {
+                Ok(s) => s,
+                Err(_) => (None, path),
+            }
+        } else {
+            (None, path)
+        }
+    }
+    fn debug_fmt(path: &str, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let (chr, path) = Self::as_contracted(path, !f.alternate());
+
+        let path = drive::remove_win_drive(&path).replace('\\', "/");
+        if let Some(chr) = chr {
+            write!(f, "{chr}/")?;
+        }
+        write!(f, "{path}")
+    }
 }
 
 #[cfg(any(test, not(windows)))]

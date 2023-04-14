@@ -1,7 +1,5 @@
-#[cfg(all(test, not(windows)))]
-mod test_lin;
-#[cfg(all(test, windows))]
-mod test_win;
+#[cfg(test)]
+mod test;
 
 mod path;
 mod public;

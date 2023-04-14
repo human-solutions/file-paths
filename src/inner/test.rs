@@ -1,4 +1,7 @@
-use crate::{inner::PathInner, os::LinTestOS};
+use crate::{
+    inner::PathInner,
+    os::{LinTestOS, WinTestOS},
+};
 
 #[test]
 fn test_abs_path_inner() {
@@ -8,6 +11,14 @@ fn test_abs_path_inner() {
     assert_eq!(p1.path, "/home/dir");
     assert_eq!(segs, vec!["home", "dir"]);
     assert_eq!(format!("{p1}"), "/home/dir");
+    assert_eq!(p1.is_absolute(), true);
+
+    let p1 = PathInner::<WinTestOS>::new("/home/di").unwrap();
+    let segs: Vec<&str> = p1.segments().collect();
+
+    assert_eq!(p1.path, "C:\\home\\di");
+    assert_eq!(segs, vec!["home", "di"]);
+    assert_eq!(format!("{p1}"), "C:\\home\\di");
     assert_eq!(p1.is_absolute(), true);
 }
 
@@ -19,6 +30,14 @@ fn test_no_path_inner() {
     assert_eq!(segs, Vec::<&str>::new());
     assert_eq!(format!("{p1}"), "");
     assert_eq!(p1.is_absolute(), false);
+
+    let p1 = PathInner::<WinTestOS>::new("").unwrap();
+    let segs: Vec<&str> = p1.segments().collect();
+
+    assert_eq!(p1.path, "C:");
+    assert_eq!(segs, Vec::<&str>::new());
+    assert_eq!(format!("{p1}"), "C:");
+    assert_eq!(p1.is_absolute(), false);
 }
 
 #[test]
@@ -28,6 +47,14 @@ fn test_root_lin() {
     assert_eq!(p1.path, "/");
     assert_eq!(segs, Vec::<&str>::new());
     assert_eq!(format!("{p1}"), "/");
+    assert_eq!(p1.is_absolute(), true);
+
+    let p1 = PathInner::<WinTestOS>::new("\\").unwrap();
+    let segs: Vec<&str> = p1.segments().collect();
+
+    assert_eq!(p1.path, "C:\\");
+    assert_eq!(segs, Vec::<&str>::new());
+    assert_eq!(format!("{p1}"), "C:\\");
     assert_eq!(p1.is_absolute(), true);
 }
 
@@ -41,6 +68,15 @@ fn test_root_win() {
     assert_eq!(segs, Vec::<&str>::new());
     assert_eq!(format!("{p1}"), "/");
     assert_eq!(p1.is_absolute(), true);
+
+    // a windows-formatted c:/ path is kept on win.
+    let p1 = PathInner::<WinTestOS>::new("c:/").unwrap();
+    let segs: Vec<&str> = p1.segments().collect();
+
+    assert_eq!(p1.path, "C:\\");
+    assert_eq!(segs, Vec::<&str>::new());
+    assert_eq!(format!("{p1}"), "C:\\");
+    assert_eq!(p1.is_absolute(), true);
 }
 
 #[test]
@@ -52,6 +88,14 @@ fn test_home_path_inner() {
     assert_eq!(p1.path, "/home/test/dir");
     assert_eq!(segs, vec!["home", "test", "dir"]);
     assert_eq!(format!("{p1}"), "~/dir");
+    assert_eq!(p1.is_absolute(), true);
+
+    let p1 = PathInner::<WinTestOS>::new("~\\dir").unwrap();
+    let segs: Vec<&str> = p1.segments().collect();
+
+    assert_eq!(p1.path, "C:\\User\\test\\dir");
+    assert_eq!(segs, vec!["User", "test", "dir"]);
+    assert_eq!(format!("{p1}"), "~\\dir");
     assert_eq!(p1.is_absolute(), true);
 }
 
@@ -65,6 +109,14 @@ fn test_cwd_path_inner() {
     assert_eq!(segs, vec!["var", "test", "dir"]);
     assert_eq!(format!("{p1}"), "./dir");
     assert_eq!(p1.is_absolute(), true);
+
+    let p1 = PathInner::<WinTestOS>::new(".\\di").unwrap();
+    let segs: Vec<&str> = p1.segments().collect();
+
+    assert_eq!(p1.path, "C:\\current\\di");
+    assert_eq!(segs, vec!["current", "di"]);
+    assert_eq!(format!("{p1}"), ".\\di");
+    assert_eq!(p1.is_absolute(), true);
 }
 
 #[test]
@@ -73,6 +125,11 @@ fn test_display() {
 
     assert_eq!(format!("{p1}"), "./dir/hi");
     assert_eq!(format!("{p1:#}"), "/var/test/dir/hi");
+
+    let p1 = PathInner::<WinTestOS>::new(".\\dir\\hi").unwrap();
+
+    assert_eq!(format!("{p1}"), ".\\dir\\hi");
+    assert_eq!(format!("{p1:#}"), "C:\\current\\dir\\hi");
 }
 
 #[test]
@@ -81,4 +138,10 @@ fn test_debug() {
 
     assert_eq!(format!("{p1:?}"), "./dir/hi");
     assert_eq!(format!("{p1:#?}"), "/var/test/dir/hi");
+
+    let p1 = PathInner::<WinTestOS>::new(".\\dir\\hi").unwrap();
+
+    assert_eq!(p1.path, "C:\\current\\dir\\hi");
+    assert_eq!(format!("{p1:?}"), "./dir/hi");
+    assert_eq!(format!("{p1:#?}"), "/current/dir/hi");
 }

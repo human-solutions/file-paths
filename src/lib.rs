@@ -294,7 +294,6 @@ mod macros;
 mod os;
 mod path;
 
-const SEP: char = std::path::MAIN_SEPARATOR;
 const SLASH: [char; 2] = ['/', '\\'];
 
 pub use inner::TryExist;
