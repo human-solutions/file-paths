@@ -34,10 +34,6 @@ fn itest_abs_dir() {
     assert!(p_src.exists().is_ok());
 
     let p_not = AbsDir::try_from("some/rel");
-    // #[cfg(not(windows))]
-    // const ERR_STR: &str = "path is not absolute: some/rel";
-    // #[cfg(windows)] // looks like GitHub CI uses D:
-    // const ERR_STR: &str = "path is not absolute: some/rel";
 
     assert_eq!(
         p_not.unwrap_err().to_string(),

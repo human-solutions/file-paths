@@ -145,3 +145,10 @@ fn test_debug() {
     assert_eq!(format!("{p1:?}"), "./dir/hi");
     assert_eq!(format!("{p1:#?}"), "/current/dir/hi");
 }
+
+#[test]
+fn test_rel() {
+    let p = PathInner::<WinTestOS>::new("some/rel").unwrap();
+
+    assert_eq!(p.path, "C:some\\rel");
+}

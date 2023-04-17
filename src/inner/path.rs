@@ -1,6 +1,6 @@
 use std::{marker::PhantomData, path::Path};
 
-use anyhow::{ensure, Result};
+use anyhow::Result;
 use serde::Deserialize;
 
 use crate::{
@@ -36,14 +36,18 @@ impl<OS: OsGroup> PathInner<OS> {
         let path = os::expand::<OS>(path)?;
 
         let path = OS::process_drive_letter(&path, &mut inner.path)?;
-
+        println!("os path: {path}");
         if path.starts_with(SLASH) {
             inner.path.push(OS::SEP)
         }
-        let mut iter = InnerSegmentIter::new(&path);
+        println!("slash path: {path}");
+        let iter = InnerSegmentIter::new(path);
 
-        while let Some(segment) = iter.next() {
+        for (segment, has_more) in iter {
             inner.push_segment(segment)?;
+            if has_more {
+                inner.path.push(OS::SEP);
+            }
         }
         Ok(inner)
     }
@@ -73,14 +77,7 @@ impl<OS: OsGroup> PathInner<OS> {
 
     pub(crate) fn push_segment(&mut self, segment: &str) -> Result<()> {
         segment.assert_allowed_path_component()?;
-        if !self.path.is_empty() && !self.path.ends_with(OS::SEP) {
-            self.path.push(OS::SEP);
-        }
         self.path.push_str(segment);
-        ensure!(
-            segment.len() <= u8::MAX as usize,
-            "path segments must be less than 255 characters, not: {segment}"
-        );
         Ok(())
     }
 }
