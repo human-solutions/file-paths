@@ -1,5 +1,7 @@
 use crate::os::CurrentOS;
-use crate::{all_paths, inner::PathInner, serde_exist, serde_expanded, try_exist, try_from};
+use crate::{
+    all_files, all_paths, inner::PathInner, serde_exist, serde_expanded, try_exist, try_from,
+};
 use anyhow::{ensure, Result};
 use serde::{Deserialize, Serialize};
 
@@ -8,6 +10,7 @@ use serde::{Deserialize, Serialize};
 pub struct AbsFile(pub(crate) PathInner<CurrentOS>);
 
 all_paths!(AbsFile);
+all_files!(AbsFile);
 try_from!(AbsFile);
 try_exist!(AbsFile);
 serde_exist!(AbsFile);

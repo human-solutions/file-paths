@@ -2,7 +2,7 @@ use crate::ext::PathBufExt;
 use crate::os::OsGroup;
 use anyhow::Result;
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub(crate) struct LinOS {}
 
 impl OsGroup for LinOS {
@@ -13,7 +13,7 @@ impl OsGroup for LinOS {
     }
 
     fn current() -> Result<String> {
-        Ok(std::env::current_dir()?.try_to_string()?)
+        std::env::current_dir()?.try_to_string()
     }
 
     fn drive_letter() -> Result<char> {
@@ -29,7 +29,7 @@ impl OsGroup for LinOS {
     }
 
     fn process_drive_letter<'a>(path: &'a str, _inner: &mut String) -> Result<&'a str> {
-        Ok(super::drive::remove_win_drive(&path))
+        Ok(super::drive::remove_win_drive(path))
     }
 }
 
@@ -66,7 +66,7 @@ pub fn home_dir() -> Result<String> {
     #[cfg(not(any(target_os = "android", target_os = "ios", target_os = "emscripten")))]
     unsafe fn fallback() -> Option<OsString> {
         let amt = match libc::sysconf(libc::_SC_GETPW_R_SIZE_MAX) {
-            n if n < 0 => 512 as usize,
+            n if n < 0 => 512,
             n => n as usize,
         };
         let mut buf = Vec::with_capacity(amt);

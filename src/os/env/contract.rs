@@ -2,7 +2,7 @@ use anyhow::Result;
 
 use crate::os::OsGroup;
 
-pub(crate) fn contract<'a, OS: OsGroup>(path: &'a str) -> Result<(Option<char>, &'a str)> {
+pub(crate) fn contract<OS: OsGroup>(path: &str) -> Result<(Option<char>, &str)> {
     let home_rel = remove_abs_start::<OS>(path, &OS::home()?);
     let cwd_rel = remove_abs_start::<OS>(path, &OS::current()?);
     Ok(match (home_rel, cwd_rel) {

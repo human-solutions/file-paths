@@ -58,12 +58,12 @@ fn expand_envs_win() {
 
 #[cfg(test)]
 fn exp_ok_win(path: &str) -> Cow<str> {
-    expand::<WinTestOS>(path.into()).unwrap()
+    expand::<WinTestOS>(path).unwrap()
 }
 
 #[cfg(test)]
 fn exp_err_win(path: &str) -> String {
-    expand::<WinTestOS>(path.into()).unwrap_err().to_string()
+    expand::<WinTestOS>(path).unwrap_err().to_string()
 }
 
 #[test]
@@ -119,11 +119,11 @@ fn exp_envs_lin() {
 }
 
 fn exp_ok_lin(path: &str) -> Cow<str> {
-    expand::<LinTestOS>(path.into()).unwrap()
+    expand::<LinTestOS>(path).unwrap()
 }
 
 fn exp_err_lin(path: &str) -> String {
-    expand::<LinTestOS>(path.into())
+    expand::<LinTestOS>(path)
         .unwrap_err()
         .to_string()
         .replace('\\', "/")

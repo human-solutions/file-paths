@@ -2,7 +2,7 @@ use super::drive::{add_win_drive, remove_win_drive};
 use crate::os::OsGroup;
 use anyhow::Result;
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct LinTestOS {}
 
 impl OsGroup for LinTestOS {
@@ -27,11 +27,11 @@ impl OsGroup for LinTestOS {
         super::relative_part_lin(path)
     }
     fn process_drive_letter<'a>(path: &'a str, _inner: &mut String) -> Result<&'a str> {
-        Ok(remove_win_drive(&path))
+        Ok(remove_win_drive(path))
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct WinTestOS {}
 
 impl OsGroup for WinTestOS {

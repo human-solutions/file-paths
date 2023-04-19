@@ -296,7 +296,8 @@ mod path;
 
 const SLASH: [char; 2] = ['/', '\\'];
 
-pub use inner::TryExist;
+pub use inner::{FileExtensions, TryExist};
+pub use iter::*;
 pub use path::*;
 
 #[cfg(test)]

@@ -3,8 +3,8 @@
 macro_rules! serde_exist {
     ($struct:ident) => {
         pub mod exist {
-            use crate::TryExist;
             use serde::{de::Error, Deserialize, Deserializer, Serializer};
+            use $crate::TryExist;
 
             pub fn serialize<S: Serializer>(
                 path: &super::$struct,
@@ -27,8 +27,8 @@ macro_rules! serde_exist {
 macro_rules! serde_expanded {
     ($struct:ident) => {
         pub mod expanded {
-            use crate::TryExist;
             use serde::{de::Error, Deserialize, Deserializer, Serializer};
+            use $crate::TryExist;
 
             pub fn serialize<S: Serializer>(
                 path: &super::$struct,

@@ -23,8 +23,8 @@ impl Start {
         }
     }
 }
-pub(crate) fn expand<'a, OS: OsGroup>(path: &'a str) -> Result<Cow<str>> {
-    let start = Start::from(&path);
+pub(crate) fn expand<OS: OsGroup>(path: &str) -> Result<Cow<str>> {
+    let start = Start::from(path);
 
     let path: Cow<str> = match start {
         Start::Current => prefix_current_dir::<OS>(&path[1..])?,
@@ -45,7 +45,7 @@ pub(crate) fn expand<'a, OS: OsGroup>(path: &'a str) -> Result<Cow<str>> {
         let start_prcnt = ch == '%' && prev_slash;
 
         if start_curly || start_prcnt {
-            let mut key = start_curly.then_some("${").unwrap_or("%").to_string();
+            let mut key = (if start_curly { "${" } else { "%" }).to_string();
 
             while let Some(ch) = chars.next() {
                 key.push(ch);
@@ -85,20 +85,20 @@ pub(crate) fn expand<'a, OS: OsGroup>(path: &'a str) -> Result<Cow<str>> {
     Ok(Cow::Owned(expanded))
 }
 
-fn prefix_current_dir<'a, P: OsGroup>(path: &'a str) -> Result<Cow<'a, str>> {
+fn prefix_current_dir<P: OsGroup>(path: &str) -> Result<Cow<str>> {
     let mut cwd = P::current().context("could not resolve the current working directory")?;
     if !cwd.ends_with(SLASH) && !path.starts_with(SLASH) {
         cwd.push(P::SEP);
     }
-    cwd.extend(path.chars());
+    cwd.push_str(path);
     Ok(Cow::Owned(cwd))
 }
 
-fn prefix_home_dir<'a, P: OsGroup>(path: &'a str) -> Result<Cow<'a, str>> {
+fn prefix_home_dir<P: OsGroup>(path: &str) -> Result<Cow<str>> {
     let mut home = P::home().context("could not resolve the current working directory")?;
     if !home.ends_with(SLASH) && !path.starts_with(SLASH) {
         home.push(P::SEP);
     }
-    home.extend(path.chars());
+    home.push_str(path);
     Ok(Cow::Owned(home))
 }

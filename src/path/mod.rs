@@ -1,3 +1,6 @@
+#[cfg(test)]
+mod test;
+
 pub mod abs_dir;
 pub mod abs_file;
 pub mod abs_path;

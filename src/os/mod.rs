@@ -33,7 +33,7 @@ pub(crate) trait OsGroup {
     fn current() -> Result<String>;
     fn drive_letter() -> Result<char>;
 
-    fn contract<'a>(path: &'a str) -> Result<(Option<char>, &'a str)> {
+    fn contract(path: &str) -> Result<(Option<char>, &str)> {
         let home_rel = Self::remove_abs_start(path, &Self::home()?);
         let cwd_rel = Self::remove_abs_start(path, &Self::current()?);
         Ok(match (home_rel, cwd_rel) {
@@ -69,7 +69,7 @@ pub(crate) trait OsGroup {
     fn debug_fmt(path: &str, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let (chr, path) = Self::as_contracted(path, !f.alternate());
 
-        let path = drive::remove_win_drive(&path).replace('\\', "/");
+        let path = drive::remove_win_drive(path).replace('\\', "/");
         if let Some(chr) = chr {
             write!(f, "{chr}/")?;
         }
@@ -89,22 +89,18 @@ pub(crate) fn is_absolute_win(path: &str) -> bool {
 
 #[cfg(any(test, windows))]
 pub(crate) fn relative_part_win(path: &str) -> &str {
-    if path.starts_with('\\') {
-        &path[1..]
+    if let Some(s) = path.strip_prefix('\\') {
+        s
     } else if path.len() >= 3 && &path[1..3] == ":\\" {
         &path[3..]
     } else if path.len() >= 2 && &path[1..2] == ":" {
         &path[2..]
     } else {
-        path.as_ref()
+        path
     }
 }
 
 #[cfg(any(test, not(windows)))]
 pub(crate) fn relative_part_lin(path: &str) -> &str {
-    if path.starts_with('/') {
-        &path[1..]
-    } else {
-        path.as_ref()
-    }
+    path.strip_prefix('/').unwrap_or(path)
 }

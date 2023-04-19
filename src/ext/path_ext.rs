@@ -16,11 +16,11 @@ impl PathBufExt for PathBuf {
 }
 
 pub(crate) trait PathExt {
-    fn try_to_str<'a>(&'a self) -> anyhow::Result<&'a str>;
+    fn try_to_str(&self) -> anyhow::Result<&str>;
 }
 
 impl PathExt for Path {
-    fn try_to_str<'a>(&'a self) -> anyhow::Result<&'a str> {
+    fn try_to_str(&self) -> anyhow::Result<&str> {
         let Some(s) = self.as_os_str().to_str() else {
             bail!("Non UTF-8 characters in path: {}", self.to_string_lossy())
         };

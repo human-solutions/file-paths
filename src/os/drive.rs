@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-pub(super) fn remove_win_drive<'a>(path: &'a str) -> &'a str {
+pub(super) fn remove_win_drive(path: &str) -> &str {
     if has_drive(path) {
         &path[2..]
     } else {
