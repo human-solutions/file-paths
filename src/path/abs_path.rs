@@ -15,7 +15,7 @@ serde_expanded!(AbsPath);
 
 impl AbsPath {
     pub(crate) fn validate(self) -> Result<Self> {
-        ensure!(self.0.is_absolute(), "path is not absolute: {self}");
+        self.0.ensure_absolute()?;
         Ok(self)
     }
 

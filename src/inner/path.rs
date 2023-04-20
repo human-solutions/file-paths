@@ -1,6 +1,6 @@
 use std::{marker::PhantomData, path::Path};
 
-use anyhow::Result;
+use anyhow::{ensure, Result};
 use serde::Deserialize;
 
 use crate::{
@@ -82,16 +82,47 @@ impl<OS: OsGroup> PathInner<OS> {
         !self.is_absolute()
     }
 
-    pub(crate) fn relative_part(&self) -> &str {
-        OS::relative_part(&self.path)
-    }
-
     pub(crate) fn is_file(&self) -> bool {
         !self.is_dir()
     }
 
     pub(crate) fn is_dir(&self) -> bool {
         self.path.ends_with(SLASH) || self.path == "." || self.path == "~"
+    }
+
+    pub(crate) fn ensure_absolute(&self) -> Result<()> {
+        ensure!(
+            self.is_absolute(),
+            "path is not absolute (it should start with a slash): {self}"
+        );
+        Ok(())
+    }
+
+    pub(crate) fn ensure_relative(&self) -> Result<()> {
+        ensure!(
+            self.is_relative(),
+            "path is not relative (should not start with a slash): {self}"
+        );
+        Ok(())
+    }
+
+    pub(crate) fn ensure_file(&self) -> Result<()> {
+        ensure!(
+            self.is_file(),
+            "path is not a file (should not end with a slash): {self}"
+        );
+        Ok(())
+    }
+    pub(crate) fn ensure_dir(&self) -> Result<()> {
+        ensure!(
+            self.is_dir(),
+            "path is not a dir (doesn't end with a slash): {self}"
+        );
+        Ok(())
+    }
+
+    pub(crate) fn relative_part(&self) -> &str {
+        OS::relative_part(&self.path)
     }
 
     pub(crate) fn join<S: AsRef<str>>(&self, path: S) -> Result<Self> {

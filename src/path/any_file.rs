@@ -12,6 +12,7 @@ try_from!(AnyFile);
 
 impl AnyFile {
     pub(crate) fn validate(self) -> Result<Self> {
+        self.0.ensure_file()?;
         Ok(self)
     }
 }

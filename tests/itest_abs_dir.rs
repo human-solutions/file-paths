@@ -35,10 +35,9 @@ fn itest_abs_dir() {
 
     let p_not = AbsDir::try_from("some/rel/");
 
-    assert!(p_not
-        .unwrap_err()
-        .to_string()
-        .starts_with("path is not absolute: "));
+    let err_str = p_not.unwrap_err().to_string();
+
+    assert!(err_str.starts_with("path is not absolute (it should start with a slash): "));
 }
 
 #[test]

@@ -12,6 +12,7 @@ try_from!(AnyDir);
 
 impl AnyDir {
     pub(crate) fn validate(self) -> Result<Self> {
+        self.0.ensure_dir()?;
         Ok(self)
     }
 }

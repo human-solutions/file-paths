@@ -17,11 +17,8 @@ serde_expanded!(AbsDir);
 
 impl AbsDir {
     pub(crate) fn validate(self) -> Result<Self> {
-        ensure!(self.0.is_absolute(), "path is not absolute: {self}");
-        ensure!(
-            self.0.is_dir(),
-            "path is not a dir (doesn't end with a slash): {self}"
-        );
+        self.0.ensure_absolute()?;
+        self.0.ensure_dir()?;
         Ok(self)
     }
 

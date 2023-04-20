@@ -1,6 +1,6 @@
 use crate::os::CurrentOS;
 use crate::{all_paths, inner::PathInner, try_from};
-use anyhow::{ensure, Result};
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -12,7 +12,8 @@ try_from!(RelDir);
 
 impl RelDir {
     pub(crate) fn validate(self) -> Result<Self> {
-        ensure!(!self.0.is_absolute(), "directory is not relative: {self}");
+        self.0.ensure_relative()?;
+        self.0.ensure_dir()?;
         Ok(self)
     }
 }

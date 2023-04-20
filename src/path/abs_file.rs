@@ -18,11 +18,8 @@ serde_expanded!(AbsFile);
 
 impl AbsFile {
     pub(crate) fn validate(self) -> Result<Self> {
-        ensure!(self.0.is_absolute(), "path is not absolute: {self}");
-        ensure!(
-            self.0.is_file(),
-            "path is not a file (should not end with a slash): {self}"
-        );
+        self.0.ensure_absolute()?;
+        self.0.ensure_file()?;
         Ok(self)
     }
 

@@ -1,6 +1,6 @@
 use crate::os::CurrentOS;
 use crate::{all_paths, inner::PathInner, try_from};
-use anyhow::{ensure, Result};
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -12,7 +12,7 @@ try_from!(RelPath);
 
 impl RelPath {
     pub(crate) fn validate(self) -> Result<Self> {
-        ensure!(!self.0.is_absolute(), "path is not relative: {self}");
+        self.0.ensure_relative()?;
         Ok(self)
     }
 }
