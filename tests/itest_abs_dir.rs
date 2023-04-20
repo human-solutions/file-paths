@@ -68,7 +68,7 @@ fn i_abs_dir_json() {
     #[cfg(windows)]
     assert_eq!(
         val,
-        "dir doesn't exist: .\\doesntexist\\ at line 1 column 27"
+        "dir doesn't exist: .\\doesntexist\\ at line 1 column 28"
     );
 
     let val = err_json(r###" { "path1": "./Cargo.toml", "path2": "./dir1"  } "###);
