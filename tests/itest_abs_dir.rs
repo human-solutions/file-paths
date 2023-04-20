@@ -16,24 +16,24 @@ struct ExpandPathTest {
 
 #[test]
 fn itest_abs_dir() {
-    let p = AbsDir::try_from("/dir1/dir2").unwrap();
+    let p = AbsDir::try_from("/dir1/dir2/").unwrap();
 
     let segs = p.segments().collect::<Vec<_>>();
 
     assert_eq!(segs, vec!["dir1", "dir2"]);
-    assert_eq!(format!("{p:?}"), "AbsDir(/dir1/dir2)");
+    assert_eq!(format!("{p:?}"), "AbsDir(/dir1/dir2/)");
 
     #[cfg(not(windows))]
-    const ERR_STR: &str = "dir doesn't exist: /dir1/dir2";
+    const ERR_STR: &str = "dir doesn't exist: /dir1/dir2/";
     #[cfg(windows)] // looks like GitHub CI uses D:
-    const ERR_STR: &str = "dir doesn't exist: D:\\dir1\\dir2";
+    const ERR_STR: &str = "dir doesn't exist: D:\\dir1\\dir2\\";
 
     assert_eq!(p.exists().unwrap_err().to_string(), ERR_STR);
 
-    let p_src = AbsDir::try_from("./src").unwrap();
+    let p_src = AbsDir::try_from("./src/").unwrap();
     assert!(p_src.exists().is_ok());
 
-    let p_not = AbsDir::try_from("some/rel");
+    let p_not = AbsDir::try_from("some/rel/");
 
     assert!(p_not
         .unwrap_err()
@@ -43,8 +43,8 @@ fn itest_abs_dir() {
 
 #[test]
 fn i_abs_dir_json() {
-    let p = AbsDir::try_from("/dir1/dir2").unwrap();
-    assert_eq!(serde_json::to_string(&p).unwrap(), r#""/dir1/dir2""#);
+    let p = AbsDir::try_from("/dir1/dir2/").unwrap();
+    assert_eq!(serde_json::to_string(&p).unwrap(), r#""/dir1/dir2/""#);
 
     let exp_p = ExpandPathTest {
         path1: ".".try_into().unwrap(),
@@ -52,21 +52,24 @@ fn i_abs_dir_json() {
     assert!(serde_json::to_string(&exp_p).unwrap().len() > 10);
 
     let pt1 = PathTest {
-        path1: AbsDir::try_from("./Cargo.toml").unwrap(),
-        path2: AbsDir::try_from("./dir1").unwrap(),
+        path1: AbsDir::try_from("./src/").unwrap(),
+        path2: AbsDir::try_from("./dir1/").unwrap(),
     };
     insta::assert_snapshot!(serde_json::to_string_pretty(&pt1).unwrap(), @r###"
     {
-      "path1": "./Cargo.toml",
-      "path2": "./dir1"
+      "path1": "./src/",
+      "path2": "./dir1/"
     }
     "###);
 
-    let val = err_json(r###" { "path1": "./doesntexist", "path2": "./dir1"  } "###);
+    let val = err_json(r###" { "path1": "./doesntexist/", "path2": "./dir1/"  } "###);
     #[cfg(not(windows))]
-    assert_eq!(val, "dir doesn't exist: ./doesntexist at line 1 column 27");
+    assert_eq!(val, "dir doesn't exist: ./doesntexist/ at line 1 column 28");
     #[cfg(windows)]
-    assert_eq!(val, "dir doesn't exist: .\\doesntexist at line 1 column 27");
+    assert_eq!(
+        val,
+        "dir doesn't exist: .\\doesntexist\\ at line 1 column 27"
+    );
 
     let val = err_json(r###" { "path1": "./Cargo.toml", "path2": "./dir1"  } "###);
     #[cfg(not(windows))]

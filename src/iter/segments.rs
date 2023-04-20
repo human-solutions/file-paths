@@ -9,6 +9,11 @@ pub struct Segments<'a> {
 
 impl<'a> Segments<'a> {
     pub(crate) fn new(path: &'a str) -> Self {
+        let path = if path.ends_with(SLASH) {
+            &path[..path.len() - 1]
+        } else {
+            path
+        };
         let mut lengths = Vec::new();
         path.split_inclusive(SLASH)
             .filter(|s| !s.is_empty())
