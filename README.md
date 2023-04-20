@@ -66,6 +66,9 @@ By default, the paths are contracted, meaning that if the path starts with
 user home dir then the former that part is replaced with `~` and if it starts
 with the current working directory the replacement is `.`.
 
+A path that starts with any of `<drive>:\`, `\`, `/`, `.`, `~` is absolute.
+A path that ends with `/` or `\` is a folder.
+
 ```rust
 #[test]
 fn test() -> anyhow::Result<()> {
@@ -199,18 +202,18 @@ Also any of these filenames followed by an extension (ex: .txt).
 
 Path resolution is done without file-system access so that paths don't need to exist.
 
-| Path<sup>*</sup>         | Becomes                                  | When               | Is                                       | Comment
-| ---                      | ---                                      | ---                | ---                                      | ---
-| `.`, `./`                | nix: `/tmp`<br>win: `C:\tmp`             | current_dir()      | nix: `/tmp`<br>win: `C:\tmp`             |
-| `~`, `~/`                | nix: `/Users/tom`<br>win: `C:\Users\tom` | home_dir()         | nix: `/Users/tom`<br>win: `C:\Users\tom` |
-| `/`                      | nix: `/`<br>win: `C:\`                   | -<br>current_dir() | - <br>win: `C:/somedir`                  | - <br> win: Same drive as the current dir
-| `c:/`, `C:/`             | nix: `/`<br>win: `C:\`                   |                    |                                          | nix: Drive letter removed<br>win: Drive letters always in upper case
-| `C:dir`                  | nix: `dir`<br>win: `C:dir` .             |                    |                                          |
-| `dir//dir`               | nix: `dir/dir`<br>win: `C:dir\dir`       |                    |                                          | Multiple slashes are joined
-| `dir/./dir`              | nix: `dir/dir`<br>win: `C:dir\dir`       |                    |                                          | Dots inside of a path are ignored
-| `dir/..`                 |                                          |                    |                                          | Empty path
-| `dir1/dir2/..`           | nix: `dir1`<br>win: `C:dir1`             |                    |                                          |
-| `${MYDIR}`,<br>`%MYDIR%` | nix: `dir`<br>win: `C:dir`               | var("MYDIR")       | `dir`                                    | See [Environment variables](#environment-variables)
+| Path<sup>*</sup>         | Becomes                                    | When               | Is                                       | Comment
+| ---                      | ---                                        | ---                | ---                                      | ---
+| `.`, `./`                | nix: `/tmp/`<br>win: `C:\tmp\`             | current_dir()      | nix: `/tmp`<br>win: `C:\tmp`             |
+| `~`, `~/`                | nix: `/Users/tom/`<br>win: `C:\Users\tom\` | home_dir()         | nix: `/Users/tom`<br>win: `C:\Users\tom` |
+| `/`                      | nix: `/`<br>win: `C:\`                     | -<br>current_dir() | - <br>win: `C:/somedir`                  | - <br> win: Same drive as the current dir
+| `c:/`, `C:/`             | nix: `/`<br>win: `C:\`                     |                    |                                          | nix: Drive letter removed<br>win: Drive letters always in upper case
+| `C:dir`                  | nix: `dir/`<br>win: `C:dir/` .             |                    |                                          |
+| `dir//dir`               | nix: `dir/dir/`<br>win: `C:dir\dir\`       |                    |                                          | Multiple slashes are joined
+| `dir/./dir`              | nix: `dir/dir/`<br>win: `C:dir\dir\`       |                    |                                          | Dots inside of a path are ignored
+| `dir/..`                 |                                            |                    |                                          | Empty path
+| `dir1/dir2/..`           | nix: `dir1/`<br>win: `C:dir1\`             |                    |                                          |
+| `${MYDIR}`,<br>`%MYDIR%` | nix: `dir/`<br>win: `C:dir\`               | var("MYDIR")       | `dir`                                    | See [Environment variables](#environment-variables)
 
 Legend:
 - <sup>*</sup> - Any `/` can also be `\`.

@@ -2,7 +2,7 @@ use super::OsGroup;
 use crate::ext::PathBufExt;
 use anyhow::Result;
 
-#[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub(crate) struct WinOS {}
 
 impl OsGroup for WinOS {

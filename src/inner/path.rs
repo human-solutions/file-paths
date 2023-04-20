@@ -78,8 +78,20 @@ impl<OS: OsGroup> PathInner<OS> {
         OS::is_absolute(&self.path)
     }
 
+    pub(crate) fn is_relative(&self) -> bool {
+        !self.is_absolute()
+    }
+
     pub(crate) fn relative_part(&self) -> &str {
         OS::relative_part(&self.path)
+    }
+
+    pub(crate) fn is_file(&self) -> bool {
+        !self.is_dir()
+    }
+
+    pub(crate) fn is_dir(&self) -> bool {
+        self.path.ends_with(SLASH) || self.path == "." || self.path == "~"
     }
 
     pub(crate) fn join<S: AsRef<str>>(&self, path: S) -> Result<Self> {
@@ -126,6 +138,21 @@ impl<OS: OsGroup> PathInner<OS> {
         segment.assert_allowed_path_component()?;
         self.path.push_str(segment);
         Ok(())
+    }
+
+    pub(crate) fn file_name(&mut self) -> Option<&str> {
+        let start = if self.path.ends_with(SLASH) {
+            return None;
+        } else if let Some(last_slash_index) = self.path.rfind(SLASH) {
+            last_slash_index + 1
+        } else {
+            0
+        };
+        if start < self.path.len() {
+            Some(&self.path[start..])
+        } else {
+            None
+        }
     }
 }
 
