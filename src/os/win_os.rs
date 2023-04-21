@@ -30,7 +30,7 @@ impl OsGroup for WinOS {
         super::is_absolute_win(path)
     }
 
-    fn start_of_relative_part(path: &str) -> usize {
+    fn start_of_relative_path(path: &str) -> usize {
         super::start_of_relative_part_win(path)
     }
 
