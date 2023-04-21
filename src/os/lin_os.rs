@@ -24,8 +24,8 @@ impl OsGroup for LinOS {
         super::is_absolute_lin(path)
     }
 
-    fn relative_part(path: &str) -> &str {
-        super::relative_part_lin(path)
+    fn start_of_relative_path(path: &str) -> usize {
+        super::start_of_relative_part_lin(path)
     }
 
     fn process_drive_letter<'a>(path: &'a str, _inner: &mut String) -> Result<&'a str> {

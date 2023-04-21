@@ -1,5 +1,6 @@
 #[cfg(all(not(test), windows))]
 mod win_os;
+
 #[cfg(all(not(test), windows))]
 pub(crate) use win_os::WinOS as CurrentOS;
 
@@ -26,7 +27,7 @@ pub(crate) trait OsGroup {
     const SEP: char;
 
     fn is_absolute(path: &str) -> bool;
-    fn relative_part(path: &str) -> &str;
+    fn start_of_relative_path(path: &str) -> usize;
     fn process_drive_letter<'a>(path: &'a str, inner: &mut String) -> Result<&'a str>;
 
     fn home() -> Result<String>;
@@ -88,19 +89,23 @@ pub(crate) fn is_absolute_win(path: &str) -> bool {
 }
 
 #[cfg(any(test, windows))]
-pub(crate) fn relative_part_win(path: &str) -> &str {
-    if let Some(s) = path.strip_prefix('\\') {
-        s
+pub(crate) fn start_of_relative_part_win(path: &str) -> usize {
+    if path.starts_with('\\') {
+        1
     } else if path.len() >= 3 && &path[1..3] == ":\\" {
-        &path[3..]
+        3
     } else if path.len() >= 2 && &path[1..2] == ":" {
-        &path[2..]
+        2
     } else {
-        path
+        0
     }
 }
 
 #[cfg(any(test, not(windows)))]
-pub(crate) fn relative_part_lin(path: &str) -> &str {
-    path.strip_prefix('/').unwrap_or(path)
+pub(crate) fn start_of_relative_part_lin(path: &str) -> usize {
+    if path.starts_with('/') {
+        1
+    } else {
+        0
+    }
 }

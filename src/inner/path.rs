@@ -1,7 +1,7 @@
-use std::{marker::PhantomData, path::Path};
-
 use anyhow::{ensure, Result};
 use serde::Deserialize;
+use std::ops::Range;
+use std::{marker::PhantomData, path::Path};
 
 use crate::{
     ext::{PathExt, PathStrExt},
@@ -101,7 +101,7 @@ impl<OS: OsGroup> PathInner<OS> {
     pub(crate) fn ensure_relative(&self) -> Result<()> {
         ensure!(
             self.is_relative(),
-            "path is not relative (should not start with a slash): {self}"
+            "path is not relative (it should not start with a slash): {self}"
         );
         Ok(())
     }
@@ -109,20 +109,24 @@ impl<OS: OsGroup> PathInner<OS> {
     pub(crate) fn ensure_file(&self) -> Result<()> {
         ensure!(
             self.is_file(),
-            "path is not a file (should not end with a slash): {self}"
+            "path is not a file (it should not end with a slash): {self}"
         );
         Ok(())
     }
     pub(crate) fn ensure_dir(&self) -> Result<()> {
         ensure!(
             self.is_dir(),
-            "path is not a dir (doesn't end with a slash): {self}"
+            "path is not a dir (it doesn't end with a slash): {self}"
         );
         Ok(())
     }
 
     pub(crate) fn relative_part(&self) -> &str {
-        OS::relative_part(&self.path)
+        &self.path[OS::start_of_relative_path(&self.path)..]
+    }
+
+    pub(crate) fn relative_range(&self) -> usize {
+        OS::start_of_relative_path(&self.path)
     }
 
     pub(crate) fn join<S: AsRef<str>>(&self, path: S) -> Result<Self> {
@@ -171,19 +175,54 @@ impl<OS: OsGroup> PathInner<OS> {
         Ok(())
     }
 
-    pub(crate) fn file_name(&mut self) -> Option<&str> {
-        let start = if self.path.ends_with(SLASH) {
-            return None;
-        } else if let Some(last_slash_index) = self.path.rfind(SLASH) {
-            last_slash_index + 1
-        } else {
-            0
-        };
-        if start < self.path.len() {
-            Some(&self.path[start..])
-        } else {
-            None
-        }
+    fn file_name_start(&self) -> usize {
+        let rel_start = self.relative_range();
+        self.path.after_last_slash_from(rel_start)
+    }
+
+    pub(crate) fn file_name(&self) -> &str {
+        &self.path[self.file_name_start()..]
+    }
+
+    pub(crate) fn set_file_name(&mut self, file_name: &str) -> Result<()> {
+        file_name.assert_allowed_file_name()?;
+        let file_start = self.file_name_start();
+        self.path.truncate(file_start);
+        self.path.push_str(file_name);
+        Ok(())
+    }
+
+    pub(crate) fn with_file_name(&self, file_name: &str) -> Result<Self> {
+        let mut me = self.clone();
+        me.set_file_name(file_name)?;
+        Ok(me)
+    }
+
+    pub(crate) fn file_stem_range(&self) -> Range<usize> {
+        let rel = self.relative_range();
+        let start = self.path.after_last_slash_from(rel);
+        let end = self.path.first_dot_from(start);
+        start..end
+    }
+
+    pub(crate) fn file_stem(&self) -> &str {
+        &self.path[self.file_stem_range()]
+    }
+
+    pub(crate) fn set_file_stem(&mut self, file_stem: &str) -> Result<()> {
+        ensure!(!file_stem.is_empty(), "An empty file stem is not valid");
+        let range = self.file_stem_range();
+        let mut path = self.path[..range.start].to_string();
+        path.push_str(file_stem);
+        path.push_str(&self.path[range.end..]);
+        self.path = path;
+        Ok(())
+    }
+
+    pub(crate) fn with_file_stem(&self, file_stem: &str) -> Result<Self> {
+        let mut me = self.clone();
+        me.set_file_stem(file_stem)?;
+        Ok(me)
     }
 }
 

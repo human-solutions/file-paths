@@ -23,8 +23,9 @@ impl OsGroup for LinTestOS {
     fn is_absolute(path: &str) -> bool {
         super::is_absolute_lin(path)
     }
-    fn relative_part(path: &str) -> &str {
-        super::relative_part_lin(path)
+
+    fn start_of_relative_path(path: &str) -> usize {
+        super::start_of_relative_part_lin(path)
     }
     fn process_drive_letter<'a>(path: &'a str, _inner: &mut String) -> Result<&'a str> {
         Ok(remove_win_drive(path))
@@ -41,8 +42,8 @@ impl OsGroup for WinTestOS {
         super::is_absolute_win(path)
     }
 
-    fn relative_part(path: &str) -> &str {
-        super::relative_part_win(path)
+    fn start_of_relative_path(path: &str) -> usize {
+        super::start_of_relative_part_win(path)
     }
     fn process_drive_letter<'a>(path: &'a str, inner: &mut String) -> Result<&'a str> {
         let drive = Self::drive_letter()?;

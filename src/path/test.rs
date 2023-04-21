@@ -14,6 +14,6 @@ fn eq_test() {
     let p1 = AbsDir::try_from("./hi");
     assert_eq!(
         p1.unwrap_err().to_string(),
-        "path is not a dir (doesn't end with a slash): ./hi"
+        "path is not a dir (it doesn't end with a slash): ./hi"
     );
 }

@@ -19,6 +19,30 @@ macro_rules! all_files {
             pub fn add_extension(&mut self, extension: &str) {
                 self.0.add_extension(extension)
             }
+
+            pub fn file_name(&self) -> &str {
+                self.0.file_name()
+            }
+
+            pub fn set_file_name(&mut self, file_name: &str) -> anyhow::Result<()> {
+                self.0.set_file_name(file_name)
+            }
+
+            pub fn with_file_name(&self, file_name: &str) -> anyhow::Result<Self> {
+                Ok(Self(self.0.with_file_name(file_name)?))
+            }
+
+            pub fn file_stem(&self) -> &str {
+                self.0.file_stem()
+            }
+
+            pub fn set_file_stem(&mut self, file_stem: &str) -> anyhow::Result<()> {
+                self.0.set_file_stem(file_stem)
+            }
+
+            pub fn with_file_stem(&mut self, file_stem: &str) -> anyhow::Result<Self> {
+                Ok(Self(self.0.with_file_stem(file_stem)?))
+            }
         }
     };
 }

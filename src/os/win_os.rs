@@ -30,8 +30,8 @@ impl OsGroup for WinOS {
         super::is_absolute_win(path)
     }
 
-    fn relative_part(path: &str) -> &str {
-        super::relative_part_win(path)
+    fn start_of_relative_part(path: &str) -> usize {
+        super::start_of_relative_part_win(path)
     }
 
     fn process_drive_letter<'a>(path: &'a str, inner: &mut String) -> Result<&'a str> {

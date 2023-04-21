@@ -175,3 +175,67 @@ fn test_extensions() {
     p.set_extensions("txt");
     assert_eq!(format!("{p:?}"), "some/file.txt")
 }
+
+#[test]
+fn test_file_name() {
+    let mut p = PathInner::<LinTestOS>::new("file.text").unwrap();
+    assert_eq!(p.file_name(), "file.text");
+
+    p.set_file_name("some.bin").unwrap();
+    assert_eq!(format!("{p:?}"), "some.bin");
+
+    let p = PathInner::<LinTestOS>::new("").unwrap();
+    assert_eq!(p.file_name(), "");
+
+    let p = PathInner::<LinTestOS>::new(".").unwrap();
+    assert_eq!(p.file_name(), "");
+
+    let p = PathInner::<LinTestOS>::new("/dir/").unwrap();
+    assert_eq!(p.file_name(), "");
+
+    let p = PathInner::<LinTestOS>::new("dir/file.text.zip").unwrap();
+    assert_eq!(p.file_name(), "file.text.zip");
+
+    let p = PathInner::<LinTestOS>::new("/root/dir/file.text").unwrap();
+    assert_eq!(p.file_name(), "file.text");
+
+    let mut p = PathInner::<WinTestOS>::new("file.text").unwrap();
+    assert_eq!(p.file_name(), "file.text");
+
+    p.set_file_name("some.bin").unwrap();
+    assert_eq!(format!("{p:?}"), "some.bin");
+
+    let p = PathInner::<WinTestOS>::new("dir\\file.text").unwrap();
+    assert_eq!(p.file_name(), "file.text");
+
+    let p = PathInner::<WinTestOS>::new("c:\\root\\dir\\file.text").unwrap();
+    assert_eq!(p.file_name(), "file.text");
+}
+
+#[test]
+fn test_file_stem() {
+    let mut p = PathInner::<LinTestOS>::new("file.text").unwrap();
+    assert_eq!(p.file_stem(), "file");
+
+    p.set_file_name("some.bin").unwrap();
+    assert_eq!(p.file_stem(), "some");
+    assert_eq!(format!("{p:?}"), "some.bin");
+
+    let p = PathInner::<LinTestOS>::new("dir/file.text").unwrap();
+    assert_eq!(p.file_stem(), "file");
+
+    let p = PathInner::<LinTestOS>::new("/root/dir/file.text").unwrap();
+    assert_eq!(p.file_stem(), "file");
+
+    let mut p = PathInner::<WinTestOS>::new("file.text").unwrap();
+    assert_eq!(p.file_stem(), "file");
+
+    p.set_file_stem("some.bin").unwrap();
+    assert_eq!(format!("{p:?}"), "some.bin.text");
+
+    let p = PathInner::<WinTestOS>::new("dir\\file.text").unwrap();
+    assert_eq!(p.file_stem(), "file");
+
+    let p = PathInner::<WinTestOS>::new("c:\\root\\dir\\file.text").unwrap();
+    assert_eq!(p.file_stem(), "file");
+}
