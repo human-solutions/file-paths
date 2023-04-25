@@ -34,7 +34,7 @@
 //!
 //! ## Readable and Testable
 //!
-//! The [Display] implementation outputs the platform-native representation of
+//! The [Display](std::fmt::Display) implementation outputs the platform-native representation of
 //! a path, using the native path separator whereas the [Debug] implementation
 //! always uses the `/` path separator and also includes the path type. On windows
 //! it removes the `<drive>:` prefix
@@ -143,7 +143,7 @@
 //!   interpreted as the current working dir and user home dir respectively.
 //!
 //! Always forbidden:
-//! - Non UTF-8 characters (i.e. don't use [OsStr](std::ffi::OsStr) or [OsString](std::ffi::OsString))
+//! - Non UTF-8 characters (i.e. doesn't use [OsStr](std::ffi::OsStr) or [OsString](std::ffi::OsString))
 //! - NULL, `:`
 //!
 //! Forbidden in `strict` mode or when running on Windows:
@@ -239,24 +239,44 @@
 //!
 //! ## Conversions between X-Path types
 //!
-//! - Path:
-//!     - `.as_rel`, `as_abs` optionally returns the more specific type based on if the path is absolute or relative (no fs check)
-//!     - `.as_file`, `.as_dir` changes type without verification
-//!     - `.try_to_file`, `.try_to_dir` changes type with fs verification
+//! ### Making abstract types concrete
 //!
+//! These types are typically used for validation purposes when read from file, and
+//! for strongly typed APIs. Note that a path is considered to be a directory if it ends with a slash.
 //!
+//! | Type          | Function         | Returns
+//! | ---           | ---              | ---
+//! | **[AnyPath]** | `.to_concrete()` | `enum ConcreteType { AbsFile, AbsDir, RelFile, RelDir } `
+//! | **[AnyDir]**  | `.to_concrete()` | `Either<AbsDir, RelDir>`
+//! | **[AnyFile]** | `.to_concrete()` | `Either<AbsFile, RelFile>`
+//! | **[RelPath]** | `.to_concrete()` | `Either<RelFile, RelDir>`
+//! | **[AbsPath]** | `.to_concrete()` | `Either<AbsFile, AbsDir>`
 //!
-//! |          | AnyPath | AnyDir  | AnyFile  | RelPath | RelDir  | RelFile | AbsPath  | AbsDir      | AbsFile
-//! | ---      | ---     | ---     | ---      | ---     | ---     | ---     | ---      | ---         | ---
-//! | AnyPath  | -       | .as_dir | .as_file | .as_rel |         |         | .as_abs
-//! | AnyDir   | .as_any | -       |          |         | .as_rel |         | .as_path | .with_root  |
-//! | AnyFile
-//! | RelPath
-//! | RelDir
-//! | RelFile
-//! | AbsPath
-//! | AbsDir
-//! | AbsFile
+//! ### Converting between concrete types
+//!
+//! | To → <br> From ↓   | [RelDir]                                          | [AbsDir]             | [RelFile]                                         | [AbsFile]
+//! | ---                | ---                                               | ---                  | ---                                               | ---
+//! | **[RelDir]**       | -                                                 | `.with_root(AbsDir)` | `.with_file(RelFile)`                             |
+//! | **[AbsDir]**       | `.remove_root(AbsDir)`<br>`.relative_from(usize)` | -                    |                                                   | `.with_file(RelFile)`
+//! | **[RelFile]**      | `.drop_file()`                                    |                      | -                                                 | `.with_root(AbsDir)`   
+//! | **[AbsFile]**      |                                                   | `.drop_file()`       | `.remove_root(AbsDir)`<br>`.relative_from(usize)` | -
+//!
+//! ### Going abstract
+//!
+//! | To → <br> From ↓   | [AnyDir]                   | [AnyFile]                   | [AnyPath]
+//! | ---                | ---                        | ---                         | ---         
+//! | **[RelDir]**       | `.to_any_dir()`, `.into()` |                             | `.to_any_path()`, `.into()`
+//! | **[AbsDir]**       | `.to_any_dir()`, `.into()` |                             | `.to_any_path()`, `.into()`            
+//! | **[RelFile]**      |                            | `.to_any_file()`, `.into()` | `.to_any_path()`, `.into()`           
+//! | **[AbsFile]**      |                            | `.to_any_file()`, `.into()` | `.to_any_path()`, `.into()`
+//!
+//! ### Converting between abstract types
+//!
+//! | To → <br> From ↓   | [AnyDir]       | [AnyFile]             | [AnyPath]
+//! | ---                | ---            | ---                   | ---         
+//! | **[AnyDir]**       | -              | `.with_file(AnyFile)` | `.into()`
+//! | **[AnyFile]**      | `.drop_file()` | -                     | `.into()`
+//! | **[AnyPath]**      | `.try_into()`  | `.try_into()`         | -           
 //!
 //! Functions provided per type.
 //!
@@ -267,22 +287,13 @@
 //!     - `.exists`
 //! - Any (AnyDir, AnyFile, AnyPath):
 //!     - `.is_rel`, `.is_abs`
-//!     - `.as_rel`, `.as_abs` optionally convert into relative or absolute.
-//!     - `.as_file`, `.as_dir` convert into file/dir without verifications
-//!     - `.try_to_file`, `.try_to_dir` convert into file/dir with filesystem verification.
-//! - Abs (AbsFile, AbsDir, AbsPath):
-//!     - `.remove_root`
-//!     - `.to_rel_from`
-//!     - `.as_file`, `.as_dir`
-//! - Rel:
-//!     - `.with_root`
-//!     - `.as_file`, `.as_dir`
 //! - Dir:
 //!     - `.push`, `.pushing`
+//!     - `.pop`
 //! - File:
 //!     - `.file_name`, `.with_file_name`, `.set_file_name`, `.file_stem`, `.with_file_stem`, `.set_file_stem`
 //!     - `.extensions`: iterator over extensions
-//!     - `.set_extensions`, `.with_extensions`: set extensions from any IntoIter<str>
+//!     - `.set_extensions`, `.with_extensions`: set extensions from any IntoIter&ltstr&gt
 //!
 //! # References
 //!
