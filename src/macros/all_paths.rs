@@ -14,10 +14,6 @@ macro_rules! all_paths {
             pub fn as_path(&self) -> &std::path::Path {
                 self.0.as_path()
             }
-
-            pub fn join(&mut self, path: &str) -> anyhow::Result<Self> {
-                Ok(Self(self.0.join(path)?))
-            }
         }
 
         impl std::fmt::Display for $struct {

@@ -281,8 +281,8 @@ for strongly typed APIs. Note that a path is considered to be a directory if it 
 
 | To → <br> From ↓   | [RelDir]                                          | [AbsDir]             | [RelFile]                                         | [AbsFile]
 | ---                | ---                                               | ---                  | ---                                               | ---
-| **[RelDir]**       | -                                                 | `.with_root(AbsDir)` | `.with_file(RelFile)`                             |
-| **[AbsDir]**       | `.remove_root(AbsDir)`<br>`.relative_from(usize)` | -                    |                                                   | `.with_file(RelFile)`
+| **[RelDir]**       | `.join(RelDir)`                                   | `.with_root(AbsDir)` | `.with_file(RelFile)`                             |
+| **[AbsDir]**       | `.remove_root(AbsDir)`<br>`.relative_from(usize)` | `.join(RelDir)`      |                                                   | `.with_file(RelFile)`
 | **[RelFile]**      | `.drop_file()`                                    |                      | -                                                 | `.with_root(AbsDir)`   
 | **[AbsFile]**      |                                                   | `.drop_file()`       | `.remove_root(AbsDir)`<br>`.relative_from(usize)` | -
 
@@ -313,6 +313,7 @@ Functions provided per type.
 - Dir:
     - `.push`, `.pushing` pushes one or more path segments.
     - `.pop`, `.popping` pops the last path segment.
+    - `.join`, `.joining` appends a relative dir.
 - File:
     - `.file_name`, `.with_file_name`, `.set_file_name`, `.file_stem`, `.with_file_stem`, `.set_file_stem`
     - `.extensions`: iterator over extensions

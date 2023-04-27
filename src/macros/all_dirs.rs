@@ -17,6 +17,10 @@ macro_rules! all_dirs {
             pub fn popping(&self) -> Self {
                 $struct(self.0.popping_last_segment())
             }
+
+            pub fn join(&mut self, dir: $crate::RelDir) {
+                self.0.join(&dir);
+            }
         }
     };
 }

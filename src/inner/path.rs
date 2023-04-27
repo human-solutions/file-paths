@@ -3,6 +3,7 @@ use serde::Deserialize;
 use std::ops::Range;
 use std::{marker::PhantomData, path::Path};
 
+use crate::RelDir;
 use crate::{
     ext::{PathExt, PathStrExt},
     iter::{Extensions, InnerSegmentIter},
@@ -141,17 +142,11 @@ impl<OS: OsGroup> PathInner<OS> {
         OS::start_of_relative_path(&self.path)
     }
 
-    pub(crate) fn join<S: AsRef<str>>(&self, path: S) -> Result<Self> {
-        let iter = InnerSegmentIter::new(path.as_ref());
-        let mut me: Self = self.clone();
-
-        for (segment, has_more) in iter {
-            me.push_segment(segment)?;
-            if has_more {
-                me.path.push(OS::SEP);
-            }
+    pub(crate) fn join(&mut self, dir: &RelDir) {
+        if !self.path.ends_with(OS::SEP) {
+            self.path.push(OS::SEP);
         }
-        Ok(me)
+        self.path.push_str(&dir.0.path);
     }
 
     pub(crate) fn extensions(&self) -> Extensions {
