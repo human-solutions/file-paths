@@ -7,6 +7,7 @@ pub(crate) struct WinOS {}
 
 impl OsGroup for WinOS {
     const SEP: char = '\\';
+    const SEP_STR: &'static str = "\\";
 
     fn home() -> Result<String> {
         home_dir()

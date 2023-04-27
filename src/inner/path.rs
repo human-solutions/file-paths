@@ -10,6 +10,8 @@ use crate::{
     SLASH,
 };
 
+use super::StringValues;
+
 #[derive(Deserialize, PartialEq, Eq)]
 #[serde(transparent)]
 pub(crate) struct PathInner<OS> {
@@ -19,7 +21,7 @@ pub(crate) struct PathInner<OS> {
     /// a path is guaranteed to have one and only one
     /// path separator (win: `\`, otherwise: `/`) per segment
     pub(crate) path: String,
-    t: PhantomData<OS>,
+    pub(crate) t: PhantomData<OS>,
 }
 
 impl<OS> Clone for PathInner<OS> {
@@ -121,11 +123,21 @@ impl<OS: OsGroup> PathInner<OS> {
         Ok(())
     }
 
+    pub(crate) fn relative_from(&self, segments: usize) -> Self {
+        let path = self
+            .segments()
+            .skip(segments)
+            .collect::<Vec<_>>()
+            .join(&OS::SEP.to_string());
+
+        Self { path, t: self.t }
+    }
+
     pub(crate) fn relative_part(&self) -> &str {
         &self.path[OS::start_of_relative_path(&self.path)..]
     }
 
-    pub(crate) fn relative_range(&self) -> usize {
+    pub(crate) fn relative_start(&self) -> usize {
         OS::start_of_relative_path(&self.path)
     }
 
@@ -146,7 +158,7 @@ impl<OS: OsGroup> PathInner<OS> {
         Extensions::new(&self.path)
     }
 
-    pub(crate) fn set_extensions<E: FileExtensions>(&mut self, extensions: E) {
+    pub(crate) fn set_extensions<E: StringValues>(&mut self, extensions: E) {
         if let Some(last_slash_index) = self.path.rfind(SLASH) {
             if let Some(first_dot_index) = self.path[last_slash_index..].find('.') {
                 self.path.truncate(last_slash_index + first_dot_index);
@@ -154,12 +166,12 @@ impl<OS: OsGroup> PathInner<OS> {
         } else if let Some(first_dot_index) = self.path.find('.') {
             self.path.truncate(first_dot_index)
         }
-        let ext = extensions.join_ext();
+        let ext = extensions.join_strings(".");
         if ext.is_empty() {
             return;
         }
         self.path.push('.');
-        self.path.push_str(&extensions.join_ext())
+        self.path.push_str(&extensions.join_strings("."))
     }
 
     pub(crate) fn add_extension(&mut self, extension: &str) {
@@ -175,8 +187,40 @@ impl<OS: OsGroup> PathInner<OS> {
         Ok(())
     }
 
+    pub(crate) fn push_segments<S: StringValues>(&mut self, segments: S) -> Result<()> {
+        for i in 0..segments.string_count() {
+            self.push_segment(segments.string_at(i))?;
+        }
+        Ok(())
+    }
+
+    pub fn pushing_segments<S: StringValues>(&self, segments: S) -> Result<Self> {
+        let mut me = self.clone();
+        me.push_segments(segments)?;
+        Ok(me)
+    }
+
+    pub(crate) fn pop_last_segment(&mut self) {
+        let rel_start = self.relative_start();
+        let end = if self.path[rel_start..].ends_with(OS::SEP) {
+            self.path[rel_start..self.path.len() - 1].rfind(OS::SEP)
+        } else {
+            self.path[rel_start..].rfind(OS::SEP)
+        };
+        if let Some(end) = end {
+            self.path.truncate(rel_start + end);
+        }
+    }
+
+    pub(crate) fn popping_last_segment(&self) -> Self {
+        let mut me = self.clone();
+        me.pop_last_segment();
+        me
+    }
+
+    // fn replace_segments(&mut self, )
     fn file_name_start(&self) -> usize {
-        let rel_start = self.relative_range();
+        let rel_start = self.relative_start();
         self.path.after_last_slash_from(rel_start)
     }
 
@@ -199,7 +243,7 @@ impl<OS: OsGroup> PathInner<OS> {
     }
 
     pub(crate) fn file_stem_range(&self) -> Range<usize> {
-        let rel = self.relative_range();
+        let rel = self.relative_start();
         let start = self.path.after_last_slash_from(rel);
         let end = self.path.first_dot_from(start);
         start..end
@@ -219,43 +263,40 @@ impl<OS: OsGroup> PathInner<OS> {
         Ok(())
     }
 
+    pub(crate) fn drop_file(&self) -> Self {
+        let start = self.file_name_start();
+        PathInner {
+            path: self.path[..start].to_owned(),
+            t: self.t,
+        }
+    }
+
     pub(crate) fn with_file_stem(&self, file_stem: &str) -> Result<Self> {
         let mut me = self.clone();
         me.set_file_stem(file_stem)?;
         Ok(me)
     }
-}
 
-pub trait FileExtensions {
-    fn join_ext(&self) -> String;
-}
-
-impl FileExtensions for &[&str] {
-    fn join_ext(&self) -> String {
-        self.join(".")
+    pub(crate) fn with_root(&self, root: &str) -> Self {
+        PathInner {
+            path: root.to_owned() + &self.path,
+            t: self.t,
+        }
     }
-}
-
-impl FileExtensions for Vec<String> {
-    fn join_ext(&self) -> String {
-        self.join(".")
+    fn with_path(&self, path: &str) -> Self {
+        PathInner {
+            path: path.to_string(),
+            t: self.t,
+        }
     }
-}
 
-impl FileExtensions for Vec<&str> {
-    fn join_ext(&self) -> String {
-        self.join(".")
+    pub(crate) fn appending(&self, path: &str) -> Self {
+        PathInner {
+            path: self.path.clone() + path,
+            t: self.t,
+        }
     }
-}
-
-impl FileExtensions for String {
-    fn join_ext(&self) -> String {
-        self.clone()
-    }
-}
-
-impl FileExtensions for &str {
-    fn join_ext(&self) -> String {
-        self.to_string()
+    pub(crate) fn remove_root(&self, root: &str) -> Option<Self> {
+        self.path.strip_prefix(root).map(|s| self.with_path(s))
     }
 }

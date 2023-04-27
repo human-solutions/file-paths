@@ -7,6 +7,7 @@ pub struct LinTestOS {}
 
 impl OsGroup for LinTestOS {
     const SEP: char = '/';
+    const SEP_STR: &'static str = "/";
 
     fn current() -> anyhow::Result<String> {
         Ok(String::from("/var/test"))
@@ -37,6 +38,7 @@ pub struct WinTestOS {}
 
 impl OsGroup for WinTestOS {
     const SEP: char = '\\';
+    const SEP_STR: &'static str = "\\";
 
     fn is_absolute(path: &str) -> bool {
         super::is_absolute_win(path)

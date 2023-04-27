@@ -1,6 +1,8 @@
 use crate::os::CurrentOS;
 use crate::{all_paths, inner::PathInner, serde_exist, serde_expanded, try_exist, try_from};
+use crate::{AbsDir, AbsFile};
 use anyhow::{ensure, Result};
+use either::Either;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -23,5 +25,12 @@ impl AbsPath {
         let p = self.0.as_path();
         ensure!(p.exists(), "path doesn't exist: {}", self.0);
         Ok(())
+    }
+
+    pub fn to_concrete(self) -> Either<AbsDir, AbsFile> {
+        match self.0.is_dir() {
+            true => Either::Left(AbsDir(self.0)),
+            false => Either::Right(AbsFile(self.0)),
+        }
     }
 }

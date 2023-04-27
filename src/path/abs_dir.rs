@@ -1,4 +1,5 @@
 use crate::os::CurrentOS;
+use crate::{all_dirs, RelDir};
 use crate::{
     all_paths, inner::PathInner, serde_exist, serde_expanded, try_exist, try_from, AbsFile, RelFile,
 };
@@ -10,6 +11,7 @@ use serde::{Deserialize, Serialize};
 pub struct AbsDir(pub(crate) PathInner<CurrentOS>);
 
 all_paths!(AbsDir);
+all_dirs!(AbsDir);
 try_from!(AbsDir);
 try_exist!(AbsDir);
 serde_exist!(AbsDir);
@@ -29,7 +31,11 @@ impl AbsDir {
         Ok(())
     }
 
-    pub fn to_file(self, with_file: RelFile) -> Result<AbsFile> {
-        AbsFile::try_from(self.0.path + &with_file.0.path)
+    pub fn with_file(self, file: RelFile) -> AbsFile {
+        AbsFile(self.0.appending(&file.0.path))
+    }
+
+    pub fn remove_root(&self, root: AbsDir) -> Option<RelDir> {
+        self.0.remove_root(&root.0.path).map(RelDir)
     }
 }

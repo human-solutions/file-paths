@@ -7,6 +7,7 @@ pub(crate) struct LinOS {}
 
 impl OsGroup for LinOS {
     const SEP: char = '/';
+    const SEP_STR: &'static str = "/";
 
     fn home() -> Result<String> {
         home_dir()

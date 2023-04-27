@@ -3,8 +3,9 @@ mod test;
 
 mod path;
 mod public;
+mod string_values;
 mod traits;
 
-pub use path::FileExtensions;
 pub(crate) use path::PathInner;
+pub use string_values::StringValues;
 pub use traits::TryExist;

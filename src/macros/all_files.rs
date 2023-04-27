@@ -6,13 +6,13 @@ macro_rules! all_files {
                 self.0.extensions()
             }
 
-            pub fn with_extension<E: $crate::FileExtensions>(&self, extension: E) -> Self {
+            pub fn with_extension<E: $crate::StringValues>(&self, extension: E) -> Self {
                 let mut me = self.clone();
                 me.0.set_extensions(extension);
                 me
             }
 
-            pub fn set_extensions<E: $crate::FileExtensions>(&mut self, extensions: E) {
+            pub fn set_extensions<E: $crate::StringValues>(&mut self, extensions: E) {
                 self.0.set_extensions(extensions);
             }
 

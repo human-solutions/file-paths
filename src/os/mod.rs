@@ -25,6 +25,7 @@ pub(crate) use env::expand;
 
 pub(crate) trait OsGroup {
     const SEP: char;
+    const SEP_STR: &'static str;
 
     fn is_absolute(path: &str) -> bool;
     fn start_of_relative_path(path: &str) -> usize;

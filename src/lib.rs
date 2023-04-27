@@ -246,7 +246,7 @@
 //!
 //! | Type          | Function         | Returns
 //! | ---           | ---              | ---
-//! | **[AnyPath]** | `.to_concrete()` | `enum ConcreteType { AbsFile, AbsDir, RelFile, RelDir } `
+//! | **[AnyPath]** | `.to_concrete()` | `enum ConcretePath { AbsFile, AbsDir, RelFile, RelDir } `
 //! | **[AnyDir]**  | `.to_concrete()` | `Either<AbsDir, RelDir>`
 //! | **[AnyFile]** | `.to_concrete()` | `Either<AbsFile, RelFile>`
 //! | **[RelPath]** | `.to_concrete()` | `Either<RelFile, RelDir>`
@@ -285,11 +285,9 @@
 //!     - `.as_path`, gives access to Path funcs incl. `.metadata`, `is_symlink`
 //!     - `.segments`, `.with_segments`, `.set_segments`. For segments starting from the end use `.segments` + `.rev`.
 //!     - `.exists`
-//! - Any (AnyDir, AnyFile, AnyPath):
-//!     - `.is_rel`, `.is_abs`
 //! - Dir:
-//!     - `.push`, `.pushing`
-//!     - `.pop`
+//!     - `.push`, `.pushing` pushes one or more path segments.
+//!     - `.pop`, `.popping` pops the last path segment.
 //! - File:
 //!     - `.file_name`, `.with_file_name`, `.set_file_name`, `.file_stem`, `.with_file_stem`, `.set_file_stem`
 //!     - `.extensions`: iterator over extensions
@@ -310,7 +308,7 @@ mod path;
 
 const SLASH: [char; 2] = ['/', '\\'];
 
-pub use inner::{FileExtensions, TryExist};
+pub use inner::{StringValues, TryExist};
 pub use iter::*;
 pub use path::*;
 
