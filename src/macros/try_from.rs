@@ -25,12 +25,3 @@ macro_rules! try_from {
         }
     };
 }
-
-#[macro_export]
-macro_rules! dirs {
-    ($struct:ident) => {
-        impl $struct {
-            fn as_file
-        }
-    };
-}

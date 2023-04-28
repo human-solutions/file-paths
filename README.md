@@ -49,14 +49,14 @@ dir2 = "C:\\anotherdir\\%ANOTHER_ENV%"
 
 Use one of the below to communicate what your function or API expects.
 
-|     | Any       | Dir      | File      |
-| --- | ---       | ---      | ---       |
-| Any | [AnyPath] | [AnyDir] | [AnyFile] |
-| Rel | [RelPath] | [RelDir] | [RelFile] |
-| Abs | [AbsPath] | [AbsDir] | [AbsFile] |
+|     | Any            | Folder               | File               |
+| --- | ---            | ---                  | ---                |
+| Any | [AnyPath]      | [AnyFolderPath]      | [AnyFilePath]      |
+| Rel | [RelativePath] | [RelativeFolderPath] | [RelativeFilePath] |
+| Abs | [AbsolutePath] | [AbsoluteFolderPath] | [AbsoluteFilePath] |
  
 ```rust
-fn mirror(file: RelFile, from: AbsDir, to: AbsDir) {}
+fn mirror(file: RelativeFilePath, from: AbsoluteFolderPath, to: AbsoluteFolderPath) {}
 ```
 
 ## Readable and Testable
@@ -77,7 +77,7 @@ A path that ends with `/` or `\` is a folder.
 #[test]
 fn test() -> anyhow::Result<()> {
     // imagine that the path string is read from a conf.toml file:
-    let dir = AbsDir::new(r"~/dir1//..\dir2");
+    let dir = AbsoluteFolderPath::new(r"~/dir1//..\dir2");
     
     //////// Display ////////
 
@@ -95,10 +95,10 @@ fn test() -> anyhow::Result<()> {
     //////// Debug ////////
     
     // using standard Debug
-    assert_eq!(format!("{dir:?}"), r#"AbsDir("~/dir2")"#);
+    assert_eq!(format!("{dir:?}"), r#"AbsoluteFolderPath("~/dir2")"#);
 
     // using alternative Debug
-    assert_eq!(format!("{dir:#?}", r#"AbsDir("/home/user/dir2")"#))
+    assert_eq!(format!("{dir:#?}", r#"AbsoluteFolderPath("/home/user/dir2")"#))
 }
 ```
 
@@ -127,9 +127,9 @@ Access the paths as `&str`, all paths implement:
   a platform-specific format when used.
 - Write config files using paths that work across platforms (as far as possible).
 - AnyPath for general use and specific ones when you need to assure that
-- Provide types distinguishing between Absolute or Relative and Directory or File:
-    - AnyFile, AbsFile, RelFile
-    - AnyDir, AbsDir, AbsDir
+- Provide types distinguishing between Absolute or Relative and Folderor File:
+    - AnyFilePath, AbsoluteFilePath, RelativeFilePath
+    - AnyFolderPath, AbsoluteFolderPath, AbsoluteFolderPath
 - Support for the major operating systems and file systems:
     - Linux & Unix: most file systems.
     - macOS: HFS+, APFS.
@@ -165,7 +165,7 @@ Reserved characters:
 - `$` and `%`: when at the start of a path or immediately after a slash it will be
   interpreted as an environment variable see section [Environment variables](#environment-variables)
 - `.` and `~` when at the start of a path followed by either a slash or nothing are
-  interpreted as the current working dir and user home dir respectively.
+  interpreted as the current working directory and user home directory respectively.
 
 Always forbidden:
 - Non UTF-8 characters (i.e. doesn't use [OsStr](std::ffi::OsStr) or [OsString](std::ffi::OsString))
@@ -269,39 +269,39 @@ Any function starting with:
 These types are typically used for validation purposes when read from file, and
 for strongly typed APIs. Note that a path is considered to be a directory if it ends with a slash.
 
-| Type          | Function         | Returns
-| ---           | ---              | ---
-| **[AnyPath]** | `.to_concrete()` | `enum ConcretePath { AbsFile, AbsDir, RelFile, RelDir } `
-| **[AnyDir]**  | `.to_concrete()` | `Either<AbsDir, RelDir>`
-| **[AnyFile]** | `.to_concrete()` | `Either<AbsFile, RelFile>`
-| **[RelPath]** | `.to_concrete()` | `Either<RelFile, RelDir>`
-| **[AbsPath]** | `.to_concrete()` | `Either<AbsFile, AbsDir>`
+| Type                | Function         | Returns
+| ---                 | ---              | ---
+| **[AnyPath]**       | `.to_concrete()` | `enum ConcretePath { AbsoluteFilePath, AbsoluteFolderPath, RelativeFilePath, RelativeFolderPath } `
+| **[AnyFolderPath]** | `.to_concrete()` | `Either<AbsoluteFolderPath, RelativeFolderPath>`
+| **[AnyFilePath]**   | `.to_concrete()` | `Either<AbsoluteFilePath, RelativeFilePath>`
+| **[RelativePath]**  | `.to_concrete()` | `Either<RelativeFilePath, RelativeFolderPath>`
+| **[AbsolutePath]**  | `.to_concrete()` | `Either<AbsoluteFilePath, AbsoluteFolderPath>`
 
 ### Converting between concrete types
 
-| To → <br> From ↓   | [RelDir]                                          | [AbsDir]             | [RelFile]                                         | [AbsFile]
-| ---                | ---                                               | ---                  | ---                                               | ---
-| **[RelDir]**       | `.join(RelDir)`                                   | `.with_root(AbsDir)` | `.with_file(RelFile)`                             |
-| **[AbsDir]**       | `.remove_root(AbsDir)`<br>`.relative_from(usize)` | `.join(RelDir)`      |                                                   | `.with_file(RelFile)`
-| **[RelFile]**      | `.drop_file()`                                    |                      | -                                                 | `.with_root(AbsDir)`   
-| **[AbsFile]**      |                                                   | `.drop_file()`       | `.remove_root(AbsDir)`<br>`.relative_from(usize)` | -
+| To → <br> From ↓         | [RelativeFolderPath]                                          | [AbsoluteFolderPath]             | [RelativeFilePath]                                            | [AbsoluteFilePath]
+| ---                      | ---                                                           | ---                              | ---                                                           | ---
+| **[RelativeFolderPath]** | `.join(RelativeFolderPath)`                                   | `.with_root(AbsoluteFolderPath)` | `.with_file(RelativeFilePath)`                                |
+| **[AbsoluteFolderPath]** | `.remove_root(AbsoluteFolderPath)`<br>`.relative_from(usize)` | `.join(RelativeFolderPath)`      |                                                               | `.with_file(RelativeFilePath)`
+| **[RelativeFilePath]**   | `.drop_file()`                                                |                                  | -                                                             | `.with_root(AbsoluteFolderPath)`   
+| **[AbsoluteFilePath]**   |                                                               | `.drop_file()`                   | `.remove_root(AbsoluteFolderPath)`<br>`.relative_from(usize)` | -
 
 ### Going abstract
 
-| To → <br> From ↓   | [AnyDir]                   | [AnyFile]                   | [AnyPath]
-| ---                | ---                        | ---                         | ---         
-| **[RelDir]**       | `.to_any_dir()`, `.into()` |                             | `.to_any_path()`, `.into()`
-| **[AbsDir]**       | `.to_any_dir()`, `.into()` |                             | `.to_any_path()`, `.into()`            
-| **[RelFile]**      |                            | `.to_any_file()`, `.into()` | `.to_any_path()`, `.into()`           
-| **[AbsFile]**      |                            | `.to_any_file()`, `.into()` | `.to_any_path()`, `.into()`
+| To → <br> From ↓         | [AnyFolderPath]            | [AnyFilePath]               | [AnyPath]
+| ---                      | ---                        | ---                         | ---         
+| **[RelativeFolderPath]** | `.to_any_dir()`, `.into()` |                             | `.to_any_path()`, `.into()`
+| **[AbsoluteFolderPath]** | `.to_any_dir()`, `.into()` |                             | `.to_any_path()`, `.into()`            
+| **[RelativeFilePath]**   |                            | `.to_any_file()`, `.into()` | `.to_any_path()`, `.into()`           
+| **[AbsoluteFilePath]**   |                            | `.to_any_file()`, `.into()` | `.to_any_path()`, `.into()`
 
 ### Converting between abstract types
 
-| To → <br> From ↓   | [AnyDir]       | [AnyFile]             | [AnyPath]
-| ---                | ---            | ---                   | ---         
-| **[AnyDir]**       | -              | `.with_file(AnyFile)` | `.into()`
-| **[AnyFile]**      | `.drop_file()` | -                     | `.into()`
-| **[AnyPath]**      | `.try_into()`  | `.try_into()`         | -           
+| To → <br> From ↓    | [AnyFolderPath] | [AnyFilePath]             | [AnyPath]
+| ---                 | ---             | ---                       | ---         
+| **[AnyFolderPath]** | -               | `.with_file(AnyFilePath)` | `.into()`
+| **[AnyFilePath]**   | `.drop_file()`  | -                         | `.into()`
+| **[AnyPath]**       | `.try_into()`   | `.try_into()`             | -           
 
 Functions provided per type.
 
@@ -310,7 +310,7 @@ Functions provided per type.
     - `.as_path`, gives access to Path funcs incl. `.metadata`, `is_symlink`
     - `.segments`, `.with_segments`, `.set_segments`. For segments starting from the end use `.segments` + `.rev`.
     - `.exists`
-- Dir:
+- Folder:
     - `.push`, `.pushing` pushes one or more path segments.
     - `.pop`, `.popping` pops the last path segment.
     - `.join`, `.joining` appends a relative dir.

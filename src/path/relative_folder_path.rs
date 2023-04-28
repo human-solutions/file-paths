@@ -1,33 +1,33 @@
 use crate::os::CurrentOS;
-use crate::{all_dirs, AbsDir, RelFile};
+use crate::{all_dirs, AbsoluteFolderPath, RelativeFilePath};
 use crate::{all_paths, inner::PathInner, try_from};
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(transparent)]
-pub struct RelDir(pub(crate) PathInner<CurrentOS>);
+pub struct RelativeFolderPath(pub(crate) PathInner<CurrentOS>);
 
-all_paths!(RelDir);
-all_dirs!(RelDir);
-try_from!(RelDir);
+all_paths!(RelativeFolderPath);
+all_dirs!(RelativeFolderPath);
+try_from!(RelativeFolderPath);
 
-impl RelDir {
+impl RelativeFolderPath {
     pub(crate) fn validate(self) -> Result<Self> {
         self.0.ensure_relative()?;
-        self.0.ensure_dir()?;
+        self.0.ensure_folder()?;
         Ok(self)
     }
 
-    pub fn with_root(&self, root: AbsDir) -> AbsDir {
+    pub fn with_root(&self, root: AbsoluteFolderPath) -> AbsoluteFolderPath {
         let path = self.0.path.clone() + &root.0.path;
         let p = PathInner { path, t: self.0.t };
-        AbsDir(p)
+        AbsoluteFolderPath(p)
     }
 
-    pub fn with_file(&self, file: RelFile) -> RelFile {
+    pub fn with_file(&self, file: RelativeFilePath) -> RelativeFilePath {
         let path = self.0.path.clone() + &file.0.path;
         let p = PathInner { path, t: self.0.t };
-        RelFile(p)
+        RelativeFilePath(p)
     }
 }

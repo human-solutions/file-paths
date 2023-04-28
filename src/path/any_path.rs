@@ -1,6 +1,9 @@
 use crate::os::CurrentOS;
 use crate::{all_paths, inner::PathInner, try_from};
-use crate::{AbsDir, AbsFile, AnyDir, AnyFile, RelDir, RelFile};
+use crate::{
+    AbsoluteFilePath, AbsoluteFolderPath, AnyFilePath, AnyFolderPath, RelativeFilePath,
+    RelativeFolderPath,
+};
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
@@ -12,10 +15,10 @@ all_paths!(AnyPath);
 try_from!(AnyPath);
 
 pub enum ConcretePath {
-    AbsDir(AbsDir),
-    RelDir(RelDir),
-    AbsFile(AbsFile),
-    RelFile(RelFile),
+    AbsDir(AbsoluteFolderPath),
+    RelDir(RelativeFolderPath),
+    AbsFile(AbsoluteFilePath),
+    RelFile(RelativeFilePath),
 }
 
 impl AnyPath {
@@ -28,7 +31,7 @@ impl AnyPath {
     }
 
     pub fn is_dir(&self) -> bool {
-        self.0.is_dir()
+        self.0.is_folder()
     }
 
     pub fn is_rel(&self) -> bool {
@@ -37,10 +40,10 @@ impl AnyPath {
 
     pub fn to_concrete(self) -> ConcretePath {
         match (self.is_abs(), self.is_dir()) {
-            (true, true) => ConcretePath::AbsDir(AbsDir(self.0)),
-            (false, true) => ConcretePath::RelDir(RelDir(self.0)),
-            (true, false) => ConcretePath::AbsFile(AbsFile(self.0)),
-            (false, false) => ConcretePath::RelFile(RelFile(self.0)),
+            (true, true) => ConcretePath::AbsDir(AbsoluteFolderPath(self.0)),
+            (false, true) => ConcretePath::RelDir(RelativeFolderPath(self.0)),
+            (true, false) => ConcretePath::AbsFile(AbsoluteFilePath(self.0)),
+            (false, false) => ConcretePath::RelFile(RelativeFilePath(self.0)),
         }
     }
 
@@ -49,38 +52,38 @@ impl AnyPath {
     }
 }
 
-impl From<RelDir> for AnyPath {
-    fn from(value: RelDir) -> Self {
+impl From<RelativeFolderPath> for AnyPath {
+    fn from(value: RelativeFolderPath) -> Self {
         Self(value.0)
     }
 }
 
-impl From<AbsDir> for AnyPath {
-    fn from(value: AbsDir) -> Self {
+impl From<AbsoluteFolderPath> for AnyPath {
+    fn from(value: AbsoluteFolderPath) -> Self {
         Self(value.0)
     }
 }
 
-impl From<RelFile> for AnyPath {
-    fn from(value: RelFile) -> Self {
+impl From<RelativeFilePath> for AnyPath {
+    fn from(value: RelativeFilePath) -> Self {
         Self(value.0)
     }
 }
 
-impl From<AbsFile> for AnyPath {
-    fn from(value: AbsFile) -> Self {
+impl From<AbsoluteFilePath> for AnyPath {
+    fn from(value: AbsoluteFilePath) -> Self {
         Self(value.0)
     }
 }
 
-impl From<AnyDir> for AnyPath {
-    fn from(value: AnyDir) -> Self {
+impl From<AnyFolderPath> for AnyPath {
+    fn from(value: AnyFolderPath) -> Self {
         Self(value.0)
     }
 }
 
-impl From<AnyFile> for AnyPath {
-    fn from(value: AnyFile) -> Self {
+impl From<AnyFilePath> for AnyPath {
+    fn from(value: AnyFilePath) -> Self {
         Self(value.0)
     }
 }

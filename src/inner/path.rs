@@ -3,7 +3,7 @@ use serde::Deserialize;
 use std::ops::Range;
 use std::{marker::PhantomData, path::Path};
 
-use crate::RelDir;
+use crate::RelativeFolderPath;
 use crate::{
     ext::{PathExt, PathStrExt},
     iter::{Extensions, InnerSegmentIter},
@@ -86,10 +86,10 @@ impl<OS: OsGroup> PathInner<OS> {
     }
 
     pub(crate) fn is_file(&self) -> bool {
-        !self.is_dir()
+        !self.is_folder()
     }
 
-    pub(crate) fn is_dir(&self) -> bool {
+    pub(crate) fn is_folder(&self) -> bool {
         self.path.ends_with(SLASH) || self.path == "." || self.path == "~"
     }
 
@@ -116,10 +116,10 @@ impl<OS: OsGroup> PathInner<OS> {
         );
         Ok(())
     }
-    pub(crate) fn ensure_dir(&self) -> Result<()> {
+    pub(crate) fn ensure_folder(&self) -> Result<()> {
         ensure!(
-            self.is_dir(),
-            "path is not a dir (it doesn't end with a slash): {self}"
+            self.is_folder(),
+            "path is not a folder (it doesn't end with a slash): {self}"
         );
         Ok(())
     }
@@ -142,7 +142,7 @@ impl<OS: OsGroup> PathInner<OS> {
         OS::start_of_relative_path(&self.path)
     }
 
-    pub(crate) fn join(&mut self, dir: &RelDir) {
+    pub(crate) fn join(&mut self, dir: &RelativeFolderPath) {
         if !self.path.ends_with(OS::SEP) {
             self.path.push(OS::SEP);
         }
