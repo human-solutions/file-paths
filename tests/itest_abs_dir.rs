@@ -23,15 +23,10 @@ fn itest_abs_dir() {
     assert_eq!(segs, vec!["dir1", "dir2"]);
     assert_eq!(format!("{p:?}"), "AbsoluteFolderPath(/dir1/dir2/)");
 
-    #[cfg(not(windows))]
-    const ERR_STR: &str = "dir doesn't exist: /dir1/dir2/";
-    #[cfg(windows)] // looks like GitHub CI uses D:
-    const ERR_STR: &str = "dir doesn't exist: D:\\dir1\\dir2\\";
-
-    assert_eq!(p.exists().unwrap_err().to_string(), ERR_STR);
+    assert!(!p.exists());
 
     let p_src = AbsoluteFolderPath::try_from("./src/").unwrap();
-    assert!(p_src.exists().is_ok());
+    assert!(p_src.exists());
 
     let p_not = AbsoluteFolderPath::try_from("some/rel/");
 
@@ -63,18 +58,21 @@ fn i_abs_dir_json() {
 
     let val = err_json(r###" { "path1": "./doesntexist/", "path2": "./dir1/"  } "###);
     #[cfg(not(windows))]
-    assert_eq!(val, "dir doesn't exist: ./doesntexist/ at line 1 column 28");
+    assert_eq!(
+        val,
+        "folder doesn't exist: ./doesntexist/ at line 1 column 28"
+    );
     #[cfg(windows)]
     assert_eq!(
         val,
-        "dir doesn't exist: .\\doesntexist\\ at line 1 column 28"
+        "folder doesn't exist: .\\doesntexist\\ at line 1 column 28"
     );
 
     let val = err_json(r###" { "path1": "./Cargo.toml", "path2": "./dir1"  } "###);
     #[cfg(not(windows))]
-    assert_eq!(val, "not a directory: ./Cargo.toml at line 1 column 26");
+    assert_eq!(val, "not a folder: ./Cargo.toml at line 1 column 26");
     #[cfg(windows)]
-    assert_eq!(val, "not a directory: .\\Cargo.toml at line 1 column 26");
+    assert_eq!(val, "not a folder: .\\Cargo.toml at line 1 column 26");
 }
 
 fn err_json(s: &str) -> String {

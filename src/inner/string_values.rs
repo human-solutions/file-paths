@@ -64,6 +64,20 @@ impl StringValues for String {
     }
 }
 
+impl StringValues for &String {
+    fn join_strings(&self, separator: &str) -> String {
+        (*self).join_strings(separator)
+    }
+
+    fn string_count(&self) -> usize {
+        (*self).string_count()
+    }
+
+    fn string_at(&self, index: usize) -> &str {
+        (*self).string_at(index)
+    }
+}
+
 impl StringValues for &str {
     fn join_strings(&self, _separator: &str) -> String {
         self.to_string()

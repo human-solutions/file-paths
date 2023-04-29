@@ -1,8 +1,7 @@
 use crate::os::CurrentOS;
-use crate::{all_dirs, RelativeFolderPath};
+use crate::{all_dirs, with_file, RelativeFolderPath};
 use crate::{
-    all_paths, inner::PathInner, serde_exist, serde_expanded, try_exist, try_from,
-    AbsoluteFilePath, RelativeFilePath,
+    all_paths, inner::PathInner, serde_exist, serde_expanded, try_exist, try_from, AbsoluteFilePath,
 };
 use anyhow::{ensure, Result};
 use serde::{Deserialize, Serialize};
@@ -15,6 +14,7 @@ all_paths!(AbsoluteFolderPath);
 all_dirs!(AbsoluteFolderPath);
 try_from!(AbsoluteFolderPath);
 try_exist!(AbsoluteFolderPath);
+with_file!(AbsoluteFolderPath, AbsoluteFilePath);
 serde_exist!(AbsoluteFolderPath);
 serde_expanded!(AbsoluteFolderPath);
 
@@ -25,18 +25,19 @@ impl AbsoluteFolderPath {
         Ok(self)
     }
 
-    pub fn exists(&self) -> Result<()> {
+    pub(crate) fn validate_fs(&self) -> Result<()> {
         let p = self.0.as_path();
-        ensure!(p.exists(), "dir doesn't exist: {}", self.0);
-        ensure!(p.is_dir(), "not a directory: {}", self.0);
+        ensure!(p.exists(), "folder doesn't exist: {}", self.0);
+        ensure!(p.is_dir(), "not a folder: {}", self.0);
         Ok(())
     }
 
-    pub fn with_file(self, file: RelativeFilePath) -> AbsoluteFilePath {
-        AbsoluteFilePath(self.0.appending(&file.0.path))
+    pub fn exists(&self) -> bool {
+        let p = self.0.as_path();
+        p.exists() && p.is_dir()
     }
 
-    pub fn remove_root(&self, root: AbsoluteFolderPath) -> Option<RelativeFolderPath> {
+    pub fn removing_root(&self, root: AbsoluteFolderPath) -> Option<RelativeFolderPath> {
         self.0.remove_root(&root.0.path).map(RelativeFolderPath)
     }
 }

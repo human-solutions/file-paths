@@ -18,8 +18,12 @@ macro_rules! all_dirs {
                 $struct(self.0.popping_last_segment())
             }
 
-            pub fn join(&mut self, folder: $crate::RelativeFolderPath) {
+            pub fn join(&mut self, folder: &$crate::RelativeFolderPath) {
                 self.0.join(&folder);
+            }
+
+            pub fn joining(&self, folder: &$crate::RelativeFolderPath) -> Self {
+                $struct(self.0.joining(&folder))
             }
 
             pub fn parent(&self) -> Option<$struct> {

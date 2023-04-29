@@ -24,22 +24,27 @@ impl AbsoluteFilePath {
         Ok(self)
     }
 
-    pub fn exists(&self) -> Result<()> {
+    pub(crate) fn validate_fs(&self) -> Result<()> {
         let p = self.0.as_path();
         ensure!(p.exists(), "file doesn't exist: {}", self.0);
         ensure!(p.is_file(), "file is not a file: {}", self.0);
         Ok(())
     }
 
-    pub fn drop_file(&self) -> AbsoluteFolderPath {
+    pub fn exists(&self) -> bool {
+        let p = self.0.as_path();
+        p.exists() && p.is_file()
+    }
+
+    pub fn dropping_file(&self) -> AbsoluteFolderPath {
         AbsoluteFolderPath(self.0.drop_file())
     }
 
-    pub fn remove_root(&self, root: AbsoluteFolderPath) -> Option<RelativeFolderPath> {
+    pub fn removing_root(&self, root: AbsoluteFolderPath) -> Option<RelativeFolderPath> {
         self.0.remove_root(root.as_str()).map(RelativeFolderPath)
     }
 
-    pub fn relative_from(&self, segment: usize) -> RelativeFolderPath {
-        RelativeFolderPath(self.0.relative_from(segment))
+    pub fn to_relative(&self, from_segment_index: usize) -> RelativeFolderPath {
+        RelativeFolderPath(self.0.relative_from(from_segment_index))
     }
 }

@@ -149,6 +149,12 @@ impl<OS: OsGroup> PathInner<OS> {
         self.path.push_str(&dir.0.path);
     }
 
+    pub(crate) fn joining(&self, dir: &RelativeFolderPath) -> Self {
+        let mut me = self.clone();
+        me.join(dir);
+        me
+    }
+
     pub(crate) fn extensions(&self) -> Extensions {
         Extensions::new(&self.path)
     }
@@ -167,13 +173,6 @@ impl<OS: OsGroup> PathInner<OS> {
         }
         self.path.push('.');
         self.path.push_str(&extensions.join_strings("."))
-    }
-
-    pub(crate) fn add_extension(&mut self, extension: &str) {
-        if !self.path.ends_with('.') && !extension.starts_with('.') {
-            self.path.push('.');
-        }
-        self.path.push_str(extension);
     }
 
     pub(crate) fn push_segment(&mut self, segment: &str) -> Result<()> {

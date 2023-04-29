@@ -279,12 +279,12 @@ for strongly typed APIs. Note that a path is considered to be a directory if it 
 
 ### Converting between concrete types
 
-| To → <br> From ↓         | [RelativeFolderPath]                                          | [AbsoluteFolderPath]             | [RelativeFilePath]                                            | [AbsoluteFilePath]
-| ---                      | ---                                                           | ---                              | ---                                                           | ---
-| **[RelativeFolderPath]** | `.join(RelativeFolderPath)`                                   | `.with_root(AbsoluteFolderPath)` | `.with_file(RelativeFilePath)`                                |
-| **[AbsoluteFolderPath]** | `.remove_root(AbsoluteFolderPath)`<br>`.relative_from(usize)` | `.join(RelativeFolderPath)`      |                                                               | `.with_file(RelativeFilePath)`
-| **[RelativeFilePath]**   | `.drop_file()`                                                |                                  | -                                                             | `.with_root(AbsoluteFolderPath)`   
-| **[AbsoluteFilePath]**   |                                                               | `.drop_file()`                   | `.remove_root(AbsoluteFolderPath)`<br>`.relative_from(usize)` | -
+| To → <br> From ↓         | [RelativeFolderPath]                                            | [AbsoluteFolderPath]             | [RelativeFilePath]                                              | [AbsoluteFilePath]
+| ---                      | ---                                                             | ---                              | ---                                                             | ---
+| **[RelativeFolderPath]** | `.join(RelativeFolderPath)`                                     | `.with_root(AbsoluteFolderPath)` | `.with_file(RelativeFilePath)`                                  |
+| **[AbsoluteFolderPath]** | `.removing_root(AbsoluteFolderPath)`<br>`.relative_from(usize)` | `.join(RelativeFolderPath)`      |                                                                 | `.with_file(RelativeFilePath)`
+| **[RelativeFilePath]**   | `.dropping_file()`                                              |                                  | -                                                               | `.with_root(AbsoluteFolderPath)`   
+| **[AbsoluteFilePath]**   |                                                                 | `.dropping_file()`               | `.removing_root(AbsoluteFolderPath)`<br>`.relative_from(usize)` | -
 
 ### Going abstract
 
@@ -297,11 +297,11 @@ for strongly typed APIs. Note that a path is considered to be a directory if it 
 
 ### Converting between abstract types
 
-| To → <br> From ↓    | [AnyFolderPath] | [AnyFilePath]             | [AnyPath]
-| ---                 | ---             | ---                       | ---         
-| **[AnyFolderPath]** | -               | `.with_file(AnyFilePath)` | `.into()`
-| **[AnyFilePath]**   | `.drop_file()`  | -                         | `.into()`
-| **[AnyPath]**       | `.try_into()`   | `.try_into()`             | -           
+| To → <br> From ↓    | [AnyFolderPath]    | [AnyFilePath]             | [AnyPath]
+| ---                 | ---                | ---                       | ---         
+| **[AnyFolderPath]** | -                  | `.with_file(AnyFilePath)` | `.into()`
+| **[AnyFilePath]**   | `.dropping_file()` | -                         | `.into()`
+| **[AnyPath]**       | `.try_into()`      | `.try_into()`             | -           
 
 Functions provided per type.
 

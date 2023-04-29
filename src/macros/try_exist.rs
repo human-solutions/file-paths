@@ -5,7 +5,7 @@ macro_rules! try_exist {
         impl $crate::TryExist<String> for $struct {
             fn try_exist(value: String) -> anyhow::Result<Self> {
                 let me = Self(PathInner::new(&value)?);
-                me.exists()?;
+                me.validate_fs()?;
                 Ok(me)
             }
         }
@@ -13,7 +13,7 @@ macro_rules! try_exist {
         impl $crate::TryExist<&str> for $struct {
             fn try_exist(value: &str) -> anyhow::Result<Self> {
                 let me = Self(PathInner::new(&value)?);
-                me.exists()?;
+                me.validate_fs()?;
                 Ok(me)
             }
         }
@@ -21,7 +21,7 @@ macro_rules! try_exist {
         impl $crate::TryExist<std::path::PathBuf> for $struct {
             fn try_exist(value: std::path::PathBuf) -> anyhow::Result<Self> {
                 let me = Self(PathInner::new_from_path(&value)?);
-                me.exists()?;
+                me.validate_fs()?;
                 Ok(me)
             }
         }

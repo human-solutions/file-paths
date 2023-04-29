@@ -16,10 +16,6 @@ macro_rules! all_files {
                 self.0.set_extensions(extensions);
             }
 
-            pub fn add_extension(&mut self, extension: &str) {
-                self.0.add_extension(extension)
-            }
-
             pub fn file_name(&self) -> &str {
                 self.0.file_name()
             }

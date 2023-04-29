@@ -1,6 +1,6 @@
 use crate::os::CurrentOS;
+use crate::{all_files, AbsoluteFolderPath, RelativeFolderPath};
 use crate::{all_paths, inner::PathInner, try_from};
-use crate::{AbsoluteFolderPath, RelativeFolderPath};
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 pub struct RelativeFilePath(pub(crate) PathInner<CurrentOS>);
 
 all_paths!(RelativeFilePath);
+all_files!(RelativeFilePath);
 try_from!(RelativeFilePath);
 
 impl RelativeFilePath {
@@ -18,7 +19,7 @@ impl RelativeFilePath {
         Ok(self)
     }
 
-    pub fn drop_file(&mut self) -> RelativeFolderPath {
+    pub fn dropping_file(&mut self) -> RelativeFolderPath {
         RelativeFolderPath(self.0.drop_file())
     }
 
