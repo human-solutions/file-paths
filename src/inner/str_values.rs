@@ -1,10 +1,10 @@
-pub trait StringValues {
+pub trait StrValues {
     fn join_strings(&self, separator: &str) -> String;
     fn string_count(&self) -> usize;
     fn string_at(&self, index: usize) -> &str;
 }
 
-impl StringValues for &[&str] {
+impl StrValues for &[&str] {
     fn join_strings(&self, separator: &str) -> String {
         self.join(separator)
     }
@@ -18,7 +18,7 @@ impl StringValues for &[&str] {
     }
 }
 
-impl StringValues for Vec<String> {
+impl StrValues for Vec<String> {
     fn join_strings(&self, separator: &str) -> String {
         self.join(separator)
     }
@@ -32,7 +32,7 @@ impl StringValues for Vec<String> {
     }
 }
 
-impl StringValues for Vec<&str> {
+impl StrValues for Vec<&str> {
     fn join_strings(&self, separator: &str) -> String {
         self.join(separator)
     }
@@ -46,7 +46,7 @@ impl StringValues for Vec<&str> {
     }
 }
 
-impl StringValues for String {
+impl StrValues for String {
     fn join_strings(&self, _separator: &str) -> String {
         self.clone()
     }
@@ -64,7 +64,7 @@ impl StringValues for String {
     }
 }
 
-impl StringValues for &String {
+impl StrValues for &String {
     fn join_strings(&self, separator: &str) -> String {
         (*self).join_strings(separator)
     }
@@ -78,7 +78,7 @@ impl StringValues for &String {
     }
 }
 
-impl StringValues for &str {
+impl StrValues for &str {
     fn join_strings(&self, _separator: &str) -> String {
         self.to_string()
     }

@@ -2,11 +2,11 @@
 macro_rules! all_dirs {
     ($struct:ident) => {
         impl $struct {
-            pub fn push<S: $crate::StringValues>(&mut self, segments: S) -> Result<()> {
+            pub fn push<S: $crate::StrValues>(&mut self, segments: S) -> Result<()> {
                 self.0.push_segments(segments)
             }
 
-            pub fn pushing<S: $crate::StringValues>(&self, segments: S) -> Result<Self> {
+            pub fn pushing<S: $crate::StrValues>(&self, segments: S) -> Result<Self> {
                 Ok($struct(self.0.pushing_segments(segments)?))
             }
 

@@ -11,7 +11,7 @@ use crate::{
     SLASH,
 };
 
-use super::StringValues;
+use super::StrValues;
 
 #[derive(Deserialize, PartialEq, Eq)]
 #[serde(transparent)]
@@ -159,7 +159,7 @@ impl<OS: OsGroup> PathInner<OS> {
         Extensions::new(&self.path)
     }
 
-    pub(crate) fn set_extensions<E: StringValues>(&mut self, extensions: E) {
+    pub(crate) fn set_extensions<E: StrValues>(&mut self, extensions: E) {
         if let Some(last_slash_index) = self.path.rfind(SLASH) {
             if let Some(first_dot_index) = self.path[last_slash_index..].find('.') {
                 self.path.truncate(last_slash_index + first_dot_index);
@@ -181,14 +181,14 @@ impl<OS: OsGroup> PathInner<OS> {
         Ok(())
     }
 
-    pub(crate) fn push_segments<S: StringValues>(&mut self, segments: S) -> Result<()> {
+    pub(crate) fn push_segments<S: StrValues>(&mut self, segments: S) -> Result<()> {
         for i in 0..segments.string_count() {
             self.push_segment(segments.string_at(i))?;
         }
         Ok(())
     }
 
-    pub fn pushing_segments<S: StringValues>(&self, segments: S) -> Result<Self> {
+    pub fn pushing_segments<S: StrValues>(&self, segments: S) -> Result<Self> {
         let mut me = self.clone();
         me.push_segments(segments)?;
         Ok(me)

@@ -3,9 +3,9 @@ mod test;
 
 mod path;
 mod public;
-mod string_values;
+mod str_values;
 mod traits;
 
 pub(crate) use path::PathInner;
-pub use string_values::StringValues;
+pub use str_values::StrValues;
 pub use traits::TryExist;
