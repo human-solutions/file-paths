@@ -21,6 +21,14 @@ macro_rules! all_dirs {
             pub fn join(&mut self, folder: $crate::RelativeFolderPath) {
                 self.0.join(&folder);
             }
+
+            pub fn parent(&self) -> Option<$struct> {
+                if let Some(parent) = self.0.parent() {
+                    Some($struct(parent))
+                } else {
+                    None
+                }
+            }
         }
     };
 }

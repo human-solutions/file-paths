@@ -213,7 +213,6 @@ impl<OS: OsGroup> PathInner<OS> {
         me
     }
 
-    // fn replace_segments(&mut self, )
     fn file_name_start(&self) -> usize {
         let rel_start = self.relative_start();
         self.path.after_last_slash_from(rel_start)
@@ -291,7 +290,20 @@ impl<OS: OsGroup> PathInner<OS> {
             t: self.t,
         }
     }
+
     pub(crate) fn remove_root(&self, root: &str) -> Option<Self> {
         self.path.strip_prefix(root).map(|s| self.with_path(s))
+    }
+
+    pub(crate) fn parent(&self) -> Option<Self> {
+        let start = self.relative_start();
+
+        let ends_with_slash = self.path[start..].ends_with(OS::SEP);
+        let end = self.path.len() - if ends_with_slash { 1 } else { 0 };
+
+        self.path[start..end].rfind(OS::SEP).map(|prev_sep| {
+            let path = self.path[..prev_sep + 2].to_string();
+            Self { path, t: self.t }
+        })
     }
 }

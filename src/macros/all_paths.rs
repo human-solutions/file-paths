@@ -1,4 +1,3 @@
-/// implement TryFrom\<String\>, TryFrom<&str>, TryFrom\<PathBuf\>
 #[macro_export]
 macro_rules! all_paths {
     ($struct:ident) => {
@@ -12,6 +11,12 @@ macro_rules! all_paths {
             }
 
             pub fn as_path(&self) -> &std::path::Path {
+                self.0.as_path()
+            }
+        }
+
+        impl std::convert::AsRef<std::path::Path> for $struct {
+            fn as_ref(&self) -> &std::path::Path {
                 self.0.as_path()
             }
         }

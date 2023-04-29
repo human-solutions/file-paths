@@ -239,3 +239,18 @@ fn test_file_stem() {
     let p = PathInner::<WinTestOS>::new("c:\\root\\dir\\file.text").unwrap();
     assert_eq!(p.file_stem(), "file");
 }
+
+#[test]
+fn test_parent() {
+    let p = PathInner::<LinTestOS>::new("/parent/dir").unwrap();
+    let parent = p.parent().unwrap();
+    assert_eq!(format!("{parent:?}"), "/parent/");
+
+    let p = PathInner::<LinTestOS>::new("/parent/").unwrap();
+    assert_eq!(p.parent(), None);
+
+    let p = PathInner::<LinTestOS>::new("/parent/dir/").unwrap();
+
+    let parent = p.parent().unwrap();
+    assert_eq!(format!("{parent:?}"), "/parent/");
+}
