@@ -1,37 +1,89 @@
-use std::{path::PathBuf, str::Chars};
+use crate::os::CurrentOS;
+use crate::{all_paths, inner::PathInner, try_from};
+use crate::{
+    AbsoluteFilePath, AbsoluteFolderPath, AnyFilePath, AnyFolderPath, RelativeFilePath,
+    RelativeFolderPath,
+};
+use anyhow::Result;
+use serde::{Deserialize, Serialize};
 
-use crate::{inner::PathInner, iter::Segments};
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct AnyPath(pub(crate) PathInner<CurrentOS>);
 
-pub struct AnyPath(PathInner);
+all_paths!(AnyPath);
+try_from!(AnyPath);
+
+pub enum ConcretePath {
+    AbsDir(AbsoluteFolderPath),
+    RelDir(RelativeFolderPath),
+    AbsFile(AbsoluteFilePath),
+    RelFile(RelativeFilePath),
+}
 
 impl AnyPath {
-    pub fn segments(&self) -> Segments {
-        self.0.segments()
+    pub fn is_abs(&self) -> bool {
+        self.0.is_absolute()
     }
 
-    pub fn chars(&self) -> Chars {
-        self.0.chars()
+    pub fn is_file(&self) -> bool {
+        self.0.is_file()
+    }
+
+    pub fn is_dir(&self) -> bool {
+        self.0.is_folder()
+    }
+
+    pub fn is_rel(&self) -> bool {
+        !self.0.is_absolute()
+    }
+
+    pub fn to_concrete(self) -> ConcretePath {
+        match (self.is_abs(), self.is_dir()) {
+            (true, true) => ConcretePath::AbsDir(AbsoluteFolderPath(self.0)),
+            (false, true) => ConcretePath::RelDir(RelativeFolderPath(self.0)),
+            (true, false) => ConcretePath::AbsFile(AbsoluteFilePath(self.0)),
+            (false, false) => ConcretePath::RelFile(RelativeFilePath(self.0)),
+        }
+    }
+
+    pub(crate) fn validate(self) -> Result<Self> {
+        Ok(self)
     }
 }
 
-impl TryFrom<String> for AnyPath {
-    type Error = anyhow::Error;
-    fn try_from(value: String) -> Result<Self, Self::Error> {
-        Ok(Self(PathInner::new(&value)?))
+impl From<RelativeFolderPath> for AnyPath {
+    fn from(value: RelativeFolderPath) -> Self {
+        Self(value.0)
     }
 }
 
-impl TryFrom<&str> for AnyPath {
-    type Error = anyhow::Error;
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        Ok(Self(PathInner::new(value)?))
+impl From<AbsoluteFolderPath> for AnyPath {
+    fn from(value: AbsoluteFolderPath) -> Self {
+        Self(value.0)
     }
 }
 
-impl TryFrom<PathBuf> for AnyPath {
-    type Error = anyhow::Error;
+impl From<RelativeFilePath> for AnyPath {
+    fn from(value: RelativeFilePath) -> Self {
+        Self(value.0)
+    }
+}
 
-    fn try_from(value: PathBuf) -> Result<Self, Self::Error> {
-        Ok(Self(PathInner::new_from_path(&value)?))
+impl From<AbsoluteFilePath> for AnyPath {
+    fn from(value: AbsoluteFilePath) -> Self {
+        Self(value.0)
+    }
+}
+
+impl From<AnyFolderPath> for AnyPath {
+    fn from(value: AnyFolderPath) -> Self {
+        Self(value.0)
+    }
+}
+
+impl From<AnyFilePath> for AnyPath {
+    fn from(value: AnyFilePath) -> Self {
+        Self(value.0)
     }
 }

@@ -16,14 +16,15 @@ impl<'a> InnerSegmentIter<'a> {
 }
 
 impl<'a> Iterator for InnerSegmentIter<'a> {
-    type Item = &'a str;
+    type Item = (&'a str, bool);
 
     fn next(&mut self) -> Option<Self::Item> {
         while let Some(next) = self.iter.next() {
             if self.iter.next_if_eq(&"..").is_some() {
                 //skip if next is .. (which is skipped as well)
             } else if !next.is_empty() {
-                return Some(next);
+                let has_more = self.iter.peek().is_some();
+                return Some((next, has_more));
             }
         }
         None
@@ -48,7 +49,7 @@ fn test_path_iter() {
 
 #[cfg(test)]
 fn segs(path: &str) -> Vec<String> {
-    InnerSegmentIter::new(&path)
-        .map(|s| s.to_string())
+    InnerSegmentIter::new(path)
+        .map(|(s, _)| s.to_string())
         .collect::<Vec<_>>()
 }

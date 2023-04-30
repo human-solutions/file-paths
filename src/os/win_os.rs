@@ -1,9 +1,47 @@
+use super::OsGroup;
+use crate::ext::PathBufExt;
 use anyhow::Result;
 
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub(crate) struct WinOS {}
+
+impl OsGroup for WinOS {
+    const SEP: char = '\\';
+    const SEP_STR: &'static str = "\\";
+
+    fn home() -> Result<String> {
+        home_dir()
+    }
+
+    fn current() -> Result<String> {
+        Ok(std::env::current_dir()?.try_to_string()?)
+    }
+
+    fn drive_letter() -> Result<char> {
+        use anyhow::bail;
+
+        let cwd = std::env::current_dir()?.try_to_string()?;
+        match crate::os::drive::win_drive(&cwd) {
+            Some(drive) => Ok(drive),
+            None => bail!("could not extract drive letter from {cwd}"),
+        }
+    }
+
+    fn is_absolute(path: &str) -> bool {
+        super::is_absolute_win(path)
+    }
+
+    fn start_of_relative_path(path: &str) -> usize {
+        super::start_of_relative_part_win(path)
+    }
+
+    fn process_drive_letter<'a>(path: &'a str, inner: &mut String) -> Result<&'a str> {
+        let drive = Self::drive_letter()?;
+        Ok(super::drive::add_win_drive(path, drive, inner))
+    }
+}
+
 pub fn home_dir() -> Result<String> {
-    #[cfg(test)]
-    return Ok(String::from(r"C:\User\test\"));
-    #[cfg(not(test))]
     unsafe {
         use anyhow::bail;
         use std::ffi::c_void;

@@ -9,7 +9,7 @@
 //! ## Config files
 //!
 //! The paths below are valid on any platform. They will be cleaned
-//! and have environment variables resolved at load.
+//! and have environment variables resolved when read.
 //!
 //! ```toml
 //! dir1 = "~/mydir/${SOME_ENV}/../"
@@ -20,42 +20,45 @@
 //!
 //! Use one of the below to communicate what your function or API expects.
 //!
-//! |     | Any       | Dir          | File          |
-//! | --- | ---       | ---          | ---           |
-//! | Any | [AnyPath] | [DirPath]    | [FilePath]    |
-//! | Rel | [RelPath] | [RelDirPath] | [RelFilePath] |
-//! | Abs | [AbsPath] | [AbsDirPath] | [AbsFilePath] |
+//! |     | Any            | Folder               | File               |
+//! | --- | ---            | ---                  | ---                |
+//! | Any | [AnyPath]      | [AnyFolderPath]      | [AnyFilePath]      |
+//! | Rel | [RelativePath] | [RelativeFolderPath] | [RelativeFilePath] |
+//! | Abs | [AbsolutePath] | [AbsoluteFolderPath] | [AbsoluteFilePath] |
 //!  
 //! ```rust
-//! # use x_path::{RelFilePath, AbsDirPath};
+//! # use x_path::{RelativeFilePath, AbsoluteFolderPath};
 //! #
-//! fn mirror(file: RelFilePath, from: AbsDirPath, to: AbsDirPath) {}
+//! fn mirror(file: RelativeFilePath, from: AbsoluteFolderPath, to: AbsoluteFolderPath) {}
 //! ```
 //!
 //! ## Readable and Testable
 //!
-//! The [Display] implementation outputs the platform-native representation of
+//! The [Display](std::fmt::Display) implementation outputs the platform-native representation of
 //! a path, using the native path separator whereas the [Debug] implementation
-//! uses the `/` path separator and also includes the path type.
-//! Both for ease of testing.
+//! always uses the `/` path separator and also includes the path type. On windows
+//! it removes the `<drive>:` prefix
 //!
 //! By default, the paths are contracted, meaning that if the path starts with
 //! user home dir then the former that part is replaced with `~` and if it starts
 //! with the current working directory the replacement is `.`.
 //!
+//! A path that starts with any of `<drive>:\`, `\`, `/`, `.`, `~` is absolute.
+//! A path that ends with `/` or `\` is a folder.
+//!
 //! ```rust
-//! # use x_path::AbsDirPath;
+//! # use x_path::AbsoluteFolderPath;
 //! #
 //! #[test]
 //! fn test() -> anyhow::Result<()> {
 //!     // imagine that the path string is read from a conf.toml file:
-//!     let dir = AbsDirPath::new(r"~/dir1//..\dir2");
+//!     let dir = AbsoluteFolderPath::new(r"~/dir1//..\dir2");
 //!     
 //!     //////// Display ////////
 //!
 //!     #[cfg(not(windows))]
 //!     assert_eq!(format!("{dir}"), "~/dir2");
-//!     #[cfg(win)]
+//!     #[cfg(windows)]
 //!     assert_eq!(format!("{dir}"), r"~\dir2");
 //!
 //!     // using alternate
@@ -67,10 +70,10 @@
 //!     //////// Debug ////////
 //!     
 //!     // using standard Debug
-//!     assert_eq!(format!("{dir:?}"), r#"AbsDirPath("~/dir2")"#);
+//!     assert_eq!(format!("{dir:?}"), r#"AbsoluteFolderPath("~/dir2")"#);
 //!
 //!     // using alternative Debug
-//!     assert_eq!(format!("{dir:#?}", r#"AbsDirPath("/home/user/dir2")"#))
+//!     assert_eq!(format!("{dir:#?}", r#"AbsoluteFolderPath("/home/user/dir2")"#))
 //! }
 //! ```
 //!
@@ -84,7 +87,7 @@
 //! much more stringent than the Unix ones. Enable the feature `strict` if
 //! you want the same restrictions applied when running on Unix.
 //!
-//! ## Convenient
+//! ## Convenience
 //!
 //! Access the paths as `&str`, all paths implement:
 //! - [Display](std::fmt::Display) for easy display.
@@ -99,9 +102,9 @@
 //!   a platform-specific format when used.
 //! - Write config files using paths that work across platforms (as far as possible).
 //! - AnyPath for general use and specific ones when you need to assure that
-//! - Provide types distinguishing between Absolute or Relative and Directory or File:
-//!     - FilePath, FileAbsPath, FileRelPath
-//!     - DirPath, DirAbsPath, DirAbsPath
+//! - Provide types distinguishing between Absolute or Relative and Folderor File:
+//!     - AnyFilePath, AbsoluteFilePath, RelativeFilePath
+//!     - AnyFolderPath, AbsoluteFolderPath, AbsoluteFolderPath
 //! - Support for the major operating systems and file systems:
 //!     - Linux & Unix: most file systems.
 //!     - macOS: HFS+, APFS.
@@ -137,10 +140,10 @@
 //! - `$` and `%`: when at the start of a path or immediately after a slash it will be
 //!   interpreted as an environment variable see section [Environment variables](#environment-variables)
 //! - `.` and `~` when at the start of a path followed by either a slash or nothing are
-//!   interpreted as the current working dir and user home dir respectively.
+//!   interpreted as the current working directory and user home directory respectively.
 //!
 //! Always forbidden:
-//! - Non UTF-8 characters (i.e. don't use [OsStr](std::ffi::OsStr) or [OsString](std::ffi::OsString))
+//! - Non UTF-8 characters (i.e. doesn't use [OsStr](std::ffi::OsStr) or [OsString](std::ffi::OsString))
 //! - NULL, `:`
 //!
 //! Forbidden in `strict` mode or when running on Windows:
@@ -154,11 +157,15 @@
 //! The path separators are kept in memory and displayed in a platform-native representation,
 //! i.e. using the platform where the binary is running. For Windows, it's `\` and for the others `/`.
 //!
-//! On Windows, any drive letters are kept upper-cased, and on the others, it is discarded.
+//! On Windows, all paths starts with the drive and the drive letter is upper-cased. When reading a
+//! path from a string, if the drive letter is missing, then the one in the current working directory
+//! is used.
+//!
+//! On other platforms, any drive letter and the following `:` are discarded.
 //!
 //! This means that a string written as either `C:\my\path` or `/my/path`
 //! is converted and stored in memory and displayed as:
-//! - Windows: `C:\my\path` when the current directory's drive letter is `c`
+//! - Windows: `C:\my\path` when the current directory's drive letter is `C`
 //! - Others: `/my/path`
 //!
 //! ## Path components
@@ -174,18 +181,18 @@
 //!
 //! Path resolution is done without file-system access so that paths don't need to exist.
 //!
-//! | Path<sup>*</sup>         | Becomes                                  | When               | Is                                       | Comment
-//! | ---                      | ---                                      | ---                | ---                                      | ---
-//! | `.`, `./`                | nix: `/tmp`<br>win: `C:\tmp`             | current_dir()      | nix: `/tmp`<br>win: `C:\tmp`             |
-//! | `~`, `~/`                | nix: `/Users/tom`<br>win: `C:\Users\tom` | home_dir()         | nix: `/Users/tom`<br>win: `C:\Users\tom` |
-//! | `/`                      | nix: `/`<br>win: `C:\`                   | -<br>current_dir() | - <br>win: `C:/somedir`                  | - <br> win: Same drive as the current dir
-//! | `c:/`, `C:/`             | nix: `/`<br>win: `C:\`                   |                    |                                          | nix: Drive letter removed<br>win: Drive letters always in upper case
-//! | `C:dir`                  | nix: `dir`<br>win: `C:dir` .             |                    |                                          |
-//! | `dir//dir`               | nix: `dir/dir`<br>win: `dir\dir`         |                    |                                          | Multiple slashes are joined
-//! | `dir/./dir`              | nix: `dir/dir`<br>win: `dir\dir`         |                    |                                          | Dots inside of a path are ignored
-//! | `dir/..`                 |                                          |                    |                                          | Empty path
-//! | `dir1/dir2/..`           | `dir1`                                   |                    |                                          |
-//! | `${MYDIR}`,<br>`%MYDIR%` | `dir`                                    | var("MYDIR")       | `dir`                                    | See [Environment variables](#environment-variables)
+//! | Path<sup>*</sup>         | Becomes                                    | When               | Is                                       | Comment
+//! | ---                      | ---                                        | ---                | ---                                      | ---
+//! | `.`, `./`                | nix: `/tmp/`<br>win: `C:\tmp\`             | current_dir()      | nix: `/tmp`<br>win: `C:\tmp`             |
+//! | `~`, `~/`                | nix: `/Users/tom/`<br>win: `C:\Users\tom\` | home_dir()         | nix: `/Users/tom`<br>win: `C:\Users\tom` |
+//! | `/`                      | nix: `/`<br>win: `C:\`                     | -<br>current_dir() | - <br>win: `C:/somedir`                  | - <br> win: Same drive as the current dir
+//! | `c:/`, `C:/`             | nix: `/`<br>win: `C:\`                     |                    |                                          | nix: Drive letter removed<br>win: Drive letters always in upper case
+//! | `C:dir`                  | nix: `dir/`<br>win: `C:dir/` .             |                    |                                          |
+//! | `dir//dir`               | nix: `dir/dir/`<br>win: `C:dir\dir\`       |                    |                                          | Multiple slashes are joined
+//! | `dir/./dir`              | nix: `dir/dir/`<br>win: `C:dir\dir\`       |                    |                                          | Dots inside of a path are ignored
+//! | `dir/..`                 |                                            |                    |                                          | Empty path
+//! | `dir1/dir2/..`           | nix: `dir1/`<br>win: `C:dir1\`             |                    |                                          |
+//! | `${MYDIR}`,<br>`%MYDIR%` | nix: `dir/`<br>win: `C:dir\`               | var("MYDIR")       | `dir`                                    | See [Environment variables](#environment-variables)
 //!
 //! Legend:
 //! - <sup>*</sup> - Any `/` can also be `\`.
@@ -220,21 +227,90 @@
 //!
 //! While paths preserve casing when kept in memory comparing is done in a case-insensitive manner.
 //!
+//! # Functions
+//!
+//! Any function starting with:
+//!
+//! - `.with_` means that a clone is returned with an updated value.
+//! - `.to_` means that the value is converted into another type.
+//! - `.set_` means that it is modified in place.
+//! - `.as_` means that it's cheaply borrowed as another type
+//!
+//!
+//! ## Conversions between X-Path types
+//!
+//! ### Making abstract types concrete
+//!
+//! These types are typically used for validation purposes when read from file, and
+//! for strongly typed APIs. Note that a path is considered to be a directory if it ends with a slash.
+//!
+//! | Type                | Function         | Returns
+//! | ---                 | ---              | ---
+//! | **[AnyPath]**       | `.to_concrete()` | `enum ConcretePath { AbsoluteFilePath, AbsoluteFolderPath, RelativeFilePath, RelativeFolderPath } `
+//! | **[AnyFolderPath]** | `.to_concrete()` | `Either<AbsoluteFolderPath, RelativeFolderPath>`
+//! | **[AnyFilePath]**   | `.to_concrete()` | `Either<AbsoluteFilePath, RelativeFilePath>`
+//! | **[RelativePath]**  | `.to_concrete()` | `Either<RelativeFilePath, RelativeFolderPath>`
+//! | **[AbsolutePath]**  | `.to_concrete()` | `Either<AbsoluteFilePath, AbsoluteFolderPath>`
+//!
+//! ### Converting between concrete types
+//!
+//! | To → <br> From ↓         | [RelativeFolderPath]                                            | [AbsoluteFolderPath]             | [RelativeFilePath]                                              | [AbsoluteFilePath]
+//! | ---                      | ---                                                             | ---                              | ---                                                             | ---
+//! | **[RelativeFolderPath]** | `.join(RelativeFolderPath)`                                     | `.with_root(AbsoluteFolderPath)` | `.with_file(RelativeFilePath)`                                  |
+//! | **[AbsoluteFolderPath]** | `.removing_root(AbsoluteFolderPath)`<br>`.relative_from(usize)` | `.join(RelativeFolderPath)`      |                                                                 | `.with_file(RelativeFilePath)`
+//! | **[RelativeFilePath]**   | `.dropping_file()`                                              |                                  | -                                                               | `.with_root(AbsoluteFolderPath)`   
+//! | **[AbsoluteFilePath]**   |                                                                 | `.dropping_file()`               | `.removing_root(AbsoluteFolderPath)`<br>`.relative_from(usize)` | -
+//!
+//! ### Going abstract
+//!
+//! | To → <br> From ↓         | [AnyFolderPath]            | [AnyFilePath]               | [AnyPath]
+//! | ---                      | ---                        | ---                         | ---         
+//! | **[RelativeFolderPath]** | `.to_any_dir()`, `.into()` |                             | `.to_any_path()`, `.into()`
+//! | **[AbsoluteFolderPath]** | `.to_any_dir()`, `.into()` |                             | `.to_any_path()`, `.into()`            
+//! | **[RelativeFilePath]**   |                            | `.to_any_file()`, `.into()` | `.to_any_path()`, `.into()`           
+//! | **[AbsoluteFilePath]**   |                            | `.to_any_file()`, `.into()` | `.to_any_path()`, `.into()`
+//!
+//! ### Converting between abstract types
+//!
+//! | To → <br> From ↓    | [AnyFolderPath]    | [AnyFilePath]             | [AnyPath]
+//! | ---                 | ---                | ---                       | ---         
+//! | **[AnyFolderPath]** | -                  | `.with_file(AnyFilePath)` | `.into()`
+//! | **[AnyFilePath]**   | `.dropping_file()` | -                         | `.into()`
+//! | **[AnyPath]**       | `.try_into()`      | `.try_into()`             | -           
+//!
+//! Functions provided per type.
+//!
+//! - All:
+//!     - `.as_str`, gives access to &str funcs incl. `.chars`, `.starts_with`, `.ends_with`
+//!     - `.as_path`, gives access to Path funcs incl. `.metadata`, `is_symlink`
+//!     - `.segments`, `.with_segments`, `.set_segments`. For segments starting from the end use `.segments` + `.rev`.
+//!     - `.exists`
+//! - Folder:
+//!     - `.push`, `.pushing` pushes one or more path segments.
+//!     - `.pop`, `.popping` pops the last path segment.
+//!     - `.join`, `.joining` appends a relative dir.
+//! - File:
+//!     - `.file_name`, `.with_file_name`, `.set_file_name`, `.file_stem`, `.with_file_stem`, `.set_file_stem`
+//!     - `.extensions`: iterator over extensions
+//!     - `.set_extensions`, `.with_extensions`: set extensions from any IntoIter&ltstr&gt
+//!
 //! # References
 //!
 //! - [File path formats on Windows systems](https://learn.microsoft.com/en-us/dotnet/standard/io/file-path-formats)
 //! - [Naming Files, Paths, and Namespaces](https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file)
 //! - [Wikipedia: Filenames - Comparison of filename limitations](https://en.wikipedia.org/wiki/Filename#Comparison_of_filename_limitations)
 
-mod env;
 mod ext;
 mod inner;
 mod iter;
+mod macros;
+mod os;
 mod path;
 
-const SEP: char = std::path::MAIN_SEPARATOR;
 const SLASH: [char; 2] = ['/', '\\'];
 
+pub use inner::{StrValues, TryExist};
+pub use iter::*;
 pub use path::*;
 
 #[cfg(test)]

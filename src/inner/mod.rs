@@ -1,11 +1,11 @@
-#[cfg(all(test, not(windows)))]
-mod test_lin;
-#[cfg(all(test, windows))]
-mod test_win;
+#[cfg(test)]
+mod test;
 
-mod drive;
-mod envs;
 mod path;
+mod public;
+mod str_values;
+mod traits;
 
-pub(crate) use envs::expand_envs;
 pub(crate) use path::PathInner;
+pub use str_values::StrValues;
+pub use traits::TryExist;

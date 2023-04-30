@@ -14,9 +14,13 @@ strict = []
 
 [dependencies]
 anyhow = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+either = "1.8"
 
 [dev-dependencies]
 markdown-includes = "0.1.1"
+serde_json = "1.0"
+insta = { version = "1.29", features = ["json"] }
 
 [target."cfg(unix)".dependencies.libc]
 version = "0.2"

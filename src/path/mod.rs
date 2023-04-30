@@ -1,19 +1,22 @@
-mod abs_dir_path;
-mod abs_file_path;
-mod abs_path;
-mod any_path;
-mod dir_path;
-mod file_path;
-mod rel_dir_path;
-mod rel_file_path;
-mod rel_path;
+#[cfg(test)]
+mod test;
 
-pub use abs_dir_path::AbsDirPath;
-pub use abs_file_path::AbsFilePath;
-pub use abs_path::AbsPath;
+pub mod absolute_file_path;
+pub mod absolute_folder_path;
+pub mod absolute_path;
+mod any_file_path;
+mod any_folder_path;
+pub mod any_path;
+mod relative_file_path;
+mod relative_folder_path;
+mod relative_path;
+
+pub use absolute_file_path::AbsoluteFilePath;
+pub use absolute_folder_path::AbsoluteFolderPath;
+pub use absolute_path::AbsolutePath;
+pub use any_file_path::AnyFilePath;
+pub use any_folder_path::AnyFolderPath;
 pub use any_path::AnyPath;
-pub use dir_path::DirPath;
-pub use file_path::FilePath;
-pub use rel_dir_path::RelDirPath;
-pub use rel_file_path::RelFilePath;
-pub use rel_path::RelPath;
+pub use relative_file_path::RelativeFilePath;
+pub use relative_folder_path::RelativeFolderPath;
+pub use relative_path::RelativePath;
