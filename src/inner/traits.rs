@@ -44,7 +44,7 @@ impl<OS: OsGroup> Serialize for PathInner<OS> {
     }
 }
 
-impl<T: StrValues> SegmentValues for T {
+impl<T: StrValues> PathValues for T {
     fn segments(&self) -> Vec<&str> {
         self.str_vec()
     }
@@ -90,11 +90,11 @@ impl StrValues for &str {
     }
 }
 
-pub trait SegmentValues {
+pub trait PathValues {
     fn segments(&self) -> Vec<&str>;
 }
 
-impl SegmentValues for RelativeFolderPath {
+impl PathValues for RelativeFolderPath {
     fn segments(&self) -> Vec<&str> {
         self.segments().collect()
     }

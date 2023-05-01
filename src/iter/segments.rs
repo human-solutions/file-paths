@@ -22,7 +22,6 @@ impl<'a> Segments<'a> {
                 lengths.push(acc + val);
                 acc + val
             });
-        println!("lengths: {lengths:?}");
         Self::new_with_lengths(path, lengths)
     }
 

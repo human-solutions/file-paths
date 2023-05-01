@@ -29,6 +29,8 @@ pub(crate) trait OsGroup {
 
     fn is_absolute(path: &str) -> bool;
     fn start_of_relative_path(path: &str) -> usize;
+    /// if a drive letter is found, then it is added to the inner path and the
+    /// returns the path string without the drive
     fn process_drive_letter<'a>(path: &'a str, inner: &mut String) -> Result<&'a str>;
 
     fn home() -> Result<String>;

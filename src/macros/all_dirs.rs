@@ -3,19 +3,19 @@ macro_rules! all_dirs {
     ($struct:ident) => {
         impl $struct {
             pub fn pop(&mut self) {
-                self.0.pop_last_segment()
+                self.0.pop()
             }
 
             pub fn popping(&self) -> Self {
-                $struct(self.0.popping_last_segment())
+                $struct(self.0.popping())
             }
 
-            pub fn join<S: $crate::SegmentValues>(&mut self, folder: S) -> Result<()> {
-                self.0.join(folder)
+            pub fn join<S: $crate::PathValues>(&mut self, path: S) -> Result<()> {
+                self.0.join(path)
             }
 
-            pub fn joining<S: $crate::SegmentValues>(&self, folder: S) -> Result<Self> {
-                Ok($struct(self.0.joining(folder)?))
+            pub fn joining<S: $crate::PathValues>(&self, path: S) -> Result<Self> {
+                Ok($struct(self.0.joining(path)?))
             }
 
             pub fn parent(&self) -> Option<$struct> {

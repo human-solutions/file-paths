@@ -5,12 +5,12 @@ use std::{marker::PhantomData, path::Path};
 
 use crate::{
     ext::{PathExt, PathStrExt},
-    iter::{Extensions, InnerSegmentIter},
+    iter::Extensions,
     os::{self, OsGroup},
     SLASH,
 };
 
-use super::{SegmentValues, StrValues};
+use super::{str_segments, PathValues, StrValues};
 
 #[derive(Deserialize, PartialEq, Eq)]
 #[serde(transparent)]
@@ -50,13 +50,9 @@ impl<OS: OsGroup> PathInner<OS> {
         if path.starts_with(SLASH) {
             inner.path.push(OS::SEP)
         }
-        let iter = InnerSegmentIter::new(path);
-
-        for (segment, has_more) in iter {
-            inner.push_segment(segment)?;
-            if has_more {
-                inner.path.push(OS::SEP);
-            }
+        inner.path.push_str(&str_segments(path)?.join(OS::SEP_STR));
+        if path.ends_with(SLASH) && !inner.path.ends_with(SLASH) {
+            inner.path.push(OS::SEP)
         }
         Ok(inner)
     }
@@ -141,19 +137,19 @@ impl<OS: OsGroup> PathInner<OS> {
         OS::start_of_relative_path(&self.path)
     }
 
-    pub(crate) fn join<S: SegmentValues>(&mut self, segments: S) -> Result<()> {
+    pub(crate) fn join<S: PathValues>(&mut self, path: S) -> Result<()> {
         if !self.path.ends_with(OS::SEP) {
             self.path.push(OS::SEP);
         }
-        for segment in segments.segments() {
+        for segment in path.segments() {
             self.push_segment(segment)?;
         }
         Ok(())
     }
 
-    pub(crate) fn joining<S: SegmentValues>(&self, segments: S) -> Result<Self> {
+    pub(crate) fn joining<S: PathValues>(&self, path: S) -> Result<Self> {
         let mut me = self.clone();
-        me.join(segments)?;
+        me.join(path)?;
         Ok(me)
     }
 
@@ -183,7 +179,7 @@ impl<OS: OsGroup> PathInner<OS> {
         Ok(())
     }
 
-    pub(crate) fn pop_last_segment(&mut self) {
+    pub(crate) fn pop(&mut self) {
         let rel_start = self.relative_start();
         let end = if self.path[rel_start..].ends_with(OS::SEP) {
             self.path[rel_start..self.path.len() - 1].rfind(OS::SEP)
@@ -195,9 +191,9 @@ impl<OS: OsGroup> PathInner<OS> {
         }
     }
 
-    pub(crate) fn popping_last_segment(&self) -> Self {
+    pub(crate) fn popping(&self) -> Self {
         let mut me = self.clone();
-        me.pop_last_segment();
+        me.pop();
         me
     }
 
