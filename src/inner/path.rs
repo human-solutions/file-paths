@@ -3,7 +3,6 @@ use serde::Deserialize;
 use std::ops::Range;
 use std::{marker::PhantomData, path::Path};
 
-use crate::RelativeFolderPath;
 use crate::{
     ext::{PathExt, PathStrExt},
     iter::{Extensions, InnerSegmentIter},
@@ -11,7 +10,7 @@ use crate::{
     SLASH,
 };
 
-use super::StrValues;
+use super::{SegmentValues, StrValues};
 
 #[derive(Deserialize, PartialEq, Eq)]
 #[serde(transparent)]
@@ -142,17 +141,20 @@ impl<OS: OsGroup> PathInner<OS> {
         OS::start_of_relative_path(&self.path)
     }
 
-    pub(crate) fn join(&mut self, dir: &RelativeFolderPath) {
+    pub(crate) fn join<S: SegmentValues>(&mut self, segments: S) -> Result<()> {
         if !self.path.ends_with(OS::SEP) {
             self.path.push(OS::SEP);
         }
-        self.path.push_str(&dir.0.path);
+        for segment in segments.segments() {
+            self.push_segment(segment)?;
+        }
+        Ok(())
     }
 
-    pub(crate) fn joining(&self, dir: &RelativeFolderPath) -> Self {
+    pub(crate) fn joining<S: SegmentValues>(&self, segments: S) -> Result<Self> {
         let mut me = self.clone();
-        me.join(dir);
-        me
+        me.join(segments)?;
+        Ok(me)
     }
 
     pub(crate) fn extensions(&self) -> Extensions {
@@ -167,31 +169,18 @@ impl<OS: OsGroup> PathInner<OS> {
         } else if let Some(first_dot_index) = self.path.find('.') {
             self.path.truncate(first_dot_index)
         }
-        let ext = extensions.join_strings(".");
+        let ext = extensions.str_vec().join(".");
         if ext.is_empty() {
             return;
         }
         self.path.push('.');
-        self.path.push_str(&extensions.join_strings("."))
+        self.path.push_str(&extensions.str_vec().join("."))
     }
 
     pub(crate) fn push_segment(&mut self, segment: &str) -> Result<()> {
         segment.assert_allowed_path_component()?;
         self.path.push_str(segment);
         Ok(())
-    }
-
-    pub(crate) fn push_segments<S: StrValues>(&mut self, segments: S) -> Result<()> {
-        for i in 0..segments.string_count() {
-            self.push_segment(segments.string_at(i))?;
-        }
-        Ok(())
-    }
-
-    pub fn pushing_segments<S: StrValues>(&self, segments: S) -> Result<Self> {
-        let mut me = self.clone();
-        me.push_segments(segments)?;
-        Ok(me)
     }
 
     pub(crate) fn pop_last_segment(&mut self) {

@@ -309,7 +309,7 @@ mod path;
 
 const SLASH: [char; 2] = ['/', '\\'];
 
-pub use inner::{StrValues, TryExist};
+pub use inner::{SegmentValues, StrValues, TryExist};
 pub use iter::*;
 pub use path::*;
 
