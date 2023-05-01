@@ -6,7 +6,8 @@ use super::PathInner;
 
 impl<OS: OsGroup> PathInner<OS> {
     pub fn segments(&self) -> Segments {
-        Segments::new(self.relative_part())
+        let start = self.relative_start();
+        Segments::new(&self.path[start..])
     }
 
     pub fn as_str(&self) -> &str {

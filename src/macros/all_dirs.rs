@@ -2,12 +2,12 @@
 macro_rules! all_dirs {
     ($struct:ident) => {
         impl $struct {
-            pub fn pop(&mut self) {
-                self.0.pop()
+            pub fn pop(&mut self, segments: usize) {
+                self.0.pop(segments)
             }
 
-            pub fn popping(&self) -> Self {
-                $struct(self.0.popping())
+            pub fn popping(&self, segments: usize) -> Self {
+                $struct(self.0.popping(segments))
             }
 
             pub fn join<S: $crate::PathValues>(&mut self, path: S) -> Result<()> {

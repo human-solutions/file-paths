@@ -1,11 +1,14 @@
 /// implement TryFrom\<String\>, TryFrom<&str>, TryFrom\<PathBuf\>
 #[macro_export]
 macro_rules! try_from {
+    // Cannot use PathValues here because it gives an error about conflicting
+    // implementations with Into. See:
+    // https://github.com/rust-lang/rust/issues/50133#issuecomment-64690839
     ($struct:ident) => {
         impl TryFrom<String> for $struct {
             type Error = anyhow::Error;
             fn try_from(value: String) -> Result<Self, Self::Error> {
-                Self(PathInner::new(&value)?).validate()
+                Self(PathInner::new(value)?).validate()
             }
         }
 
@@ -16,12 +19,14 @@ macro_rules! try_from {
             }
         }
 
-        impl TryFrom<std::path::PathBuf> for $struct {
+        impl TryFrom<&std::path::Path> for $struct {
             type Error = anyhow::Error;
 
-            fn try_from(value: std::path::PathBuf) -> Result<Self, Self::Error> {
-                Self(PathInner::new_from_path(&value)?).validate()
+            fn try_from(value: &std::path::Path) -> Result<Self, Self::Error> {
+                Self(PathInner::new(value)?).validate()
             }
         }
+
+        // impl TryFrom<Vec<String>>
     };
 }

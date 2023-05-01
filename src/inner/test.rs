@@ -254,3 +254,29 @@ fn test_parent() {
     let parent = p.parent().unwrap();
     assert_eq!(format!("{parent:?}"), "/parent/");
 }
+
+#[test]
+fn test_pop() {
+    let p = PathInner::<LinTestOS>::new("").unwrap();
+    assert_eq!(format!("{:?}", p.popping(0)), "");
+    assert_eq!(format!("{:?}", p.popping(1)), "");
+
+    let p = PathInner::<LinTestOS>::new("dir1/dir2/file").unwrap();
+    assert_eq!(format!("{:?}", p.popping(0)), "dir1/dir2/file");
+    assert_eq!(format!("{:?}", p.popping(1)), "dir1/dir2/");
+    assert_eq!(format!("{:?}", p.popping(2)), "dir1/");
+    assert_eq!(format!("{:?}", p.popping(3)), "");
+    assert_eq!(format!("{:?}", p.popping(4)), "");
+
+    let p = PathInner::<LinTestOS>::new("/dir1").unwrap();
+    assert_eq!(format!("{:?}", p.popping(0)), "/dir1");
+    assert_eq!(format!("{:?}", p.popping(1)), "/");
+    assert_eq!(format!("{:?}", p.popping(2)), "/");
+
+    let p = PathInner::<WinTestOS>::new("c:dir1/dir2/file").unwrap();
+    assert_eq!(format!("{}", p.popping(0)), "C:dir1\\dir2\\file");
+    assert_eq!(format!("{:?}", p.popping(1)), "dir1/dir2/");
+    assert_eq!(format!("{:?}", p.popping(2)), "dir1/");
+    assert_eq!(format!("{:?}", p.popping(3)), "");
+    assert_eq!(format!("{}", p.popping(4)), "C:");
+}

@@ -1,10 +1,10 @@
 use anyhow::{ensure, Result};
 use serde::Deserialize;
+use std::marker::PhantomData;
 use std::ops::Range;
-use std::{marker::PhantomData, path::Path};
 
 use crate::{
-    ext::{PathExt, PathStrExt},
+    ext::PathStrExt,
     iter::Extensions,
     os::{self, OsGroup},
     SLASH,
@@ -41,10 +41,11 @@ impl<OS: OsGroup> PathInner<OS> {
         }
     }
 
-    pub(crate) fn new(path: &str) -> Result<Self> {
+    pub(crate) fn new<P: PathValues>(path: P) -> Result<Self> {
+        let path = path.values()?.join(OS::SEP_STR);
         let mut inner = PathInner::empty();
 
-        let path = os::expand::<OS>(path)?;
+        let path = os::expand::<OS>(&path)?;
 
         let path = OS::process_drive_letter(&path, &mut inner.path)?;
         if path.starts_with(SLASH) {
@@ -55,10 +56,6 @@ impl<OS: OsGroup> PathInner<OS> {
             inner.path.push(OS::SEP)
         }
         Ok(inner)
-    }
-
-    pub(crate) fn new_from_path(path: &Path) -> Result<Self> {
-        Self::new(path.try_to_str()?)
     }
 
     pub(super) fn as_contracted(&self, do_contract: bool) -> (Option<char>, &str) {
@@ -129,25 +126,21 @@ impl<OS: OsGroup> PathInner<OS> {
         Self { path, t: self.t }
     }
 
-    pub(crate) fn relative_part(&self) -> &str {
-        &self.path[OS::start_of_relative_path(&self.path)..]
-    }
-
     pub(crate) fn relative_start(&self) -> usize {
         OS::start_of_relative_path(&self.path)
     }
 
-    pub(crate) fn join<S: PathValues>(&mut self, path: S) -> Result<()> {
+    pub(crate) fn join<P: PathValues>(&mut self, path: P) -> Result<()> {
         if !self.path.ends_with(OS::SEP) {
             self.path.push(OS::SEP);
         }
-        for segment in path.segments() {
+        for segment in path.values()? {
             self.push_segment(segment)?;
         }
         Ok(())
     }
 
-    pub(crate) fn joining<S: PathValues>(&self, path: S) -> Result<Self> {
+    pub(crate) fn joining<P: PathValues>(&self, path: P) -> Result<Self> {
         let mut me = self.clone();
         me.join(path)?;
         Ok(me)
@@ -179,21 +172,23 @@ impl<OS: OsGroup> PathInner<OS> {
         Ok(())
     }
 
-    pub(crate) fn pop(&mut self) {
+    pub(crate) fn pop(&mut self, count: usize) {
         let rel_start = self.relative_start();
-        let end = if self.path[rel_start..].ends_with(OS::SEP) {
-            self.path[rel_start..self.path.len() - 1].rfind(OS::SEP)
-        } else {
-            self.path[rel_start..].rfind(OS::SEP)
-        };
-        if let Some(end) = end {
-            self.path.truncate(rel_start + end);
+        let segments = self.segments();
+
+        let len = segments.len();
+        let cnt = if len >= count { len - count } else { 0 };
+
+        let rel_path = segments.take(cnt).collect::<Vec<_>>().join(OS::SEP_STR);
+        self.path.replace_range(rel_start.., &rel_path);
+        if !rel_path.is_empty() && count > 0 {
+            self.path.push(OS::SEP)
         }
     }
 
-    pub(crate) fn popping(&self) -> Self {
+    pub(crate) fn popping(&self, segments: usize) -> Self {
         let mut me = self.clone();
-        me.pop();
+        me.pop(segments);
         me
     }
 

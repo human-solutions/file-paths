@@ -1,6 +1,7 @@
 use super::PathInner;
 use crate::os::OsGroup;
 use crate::RelativeFolderPath;
+use anyhow::{bail, Result};
 use serde::Serialize;
 use std::{
     fmt::{Debug, Display},
@@ -44,17 +45,11 @@ impl<OS: OsGroup> Serialize for PathInner<OS> {
     }
 }
 
-impl<T: StrValues> PathValues for T {
-    fn segments(&self) -> Vec<&str> {
-        self.str_vec()
-    }
-}
-
 pub trait StrValues {
     fn str_vec(&self) -> Vec<&str>;
 }
 
-impl StrValues for &[&str] {
+impl StrValues for [&str] {
     fn str_vec(&self) -> Vec<&str> {
         self.to_vec()
     }
@@ -91,11 +86,26 @@ impl StrValues for &str {
 }
 
 pub trait PathValues {
-    fn segments(&self) -> Vec<&str>;
+    fn values(&self) -> Result<Vec<&str>>;
 }
 
 impl PathValues for RelativeFolderPath {
-    fn segments(&self) -> Vec<&str> {
-        self.segments().collect()
+    fn values(&self) -> Result<Vec<&str>> {
+        Ok(self.segments().collect())
+    }
+}
+
+impl PathValues for &Path {
+    fn values(&self) -> Result<Vec<&str>> {
+        match self.to_str() {
+            Some(path) => Ok(vec![path]),
+            None => bail!("non-utf8 characters in path: {self:?}"),
+        }
+    }
+}
+
+impl<T: StrValues> PathValues for T {
+    fn values(&self) -> Result<Vec<&str>> {
+        Ok(self.str_vec())
     }
 }
