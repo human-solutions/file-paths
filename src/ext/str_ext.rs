@@ -1,8 +1,8 @@
-use crate::SLASH;
+use crate::{error::ensure, SLASH};
 
 use super::CharExt;
 
-use anyhow::{bail, ensure, Result};
+use crate::Result;
 
 pub(crate) trait PathStrExt {
     fn is_absolute(&self) -> bool;
@@ -29,32 +29,32 @@ impl PathStrExt for str {
     }
 
     fn assert_allowed_path_component(&self) -> Result<()> {
-        ensure!(
-            self.len() <= 255,
-            "path components can have a maximum length of 255 characters but this was {}: {self}",
-            self.len(),
-        );
+        ensure(self.len() <= 255, || {
+            format!(
+                "path components can have a maximum length of 255 characters but was {}: {self}",
+                self.len()
+            )
+        })?;
         for c in self.chars() {
             if c.is_forbidden_in_path() {
-                if c.is_ascii_control() {
-                    bail!(
+                return Err(if c.is_ascii_control() {
+                    format!(
                         "forbidden ascii control character {:#x} in path segment: {self}",
                         c as i32
-                    );
+                    )
+                    .into()
                 } else {
-                    bail!("forbidden ascii character {c} in path segment: {self}")
-                }
+                    format!("forbidden ascii character {c} in path segment: {self}").into()
+                });
             }
         }
         Ok(())
     }
 
     fn assert_allowed_file_name(&self) -> Result<()> {
-        ensure!(!self.is_empty(), "An empty filename is not valid");
-        ensure!(
-            self.find(SLASH).is_none(),
-            "A file name cannot contain slashes: {self}"
-        );
-        Ok(())
+        ensure(!self.is_empty(), || "An empty filename is not valid")?;
+        ensure(self.find(SLASH).is_none(), || {
+            format!("A file name cannot contain slashes: {self}")
+        })
     }
 }

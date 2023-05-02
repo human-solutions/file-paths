@@ -1,7 +1,7 @@
 use crate::os::CurrentOS;
+use crate::Result;
 use crate::{all_files, AbsoluteFolderPath, RelativeFolderPath};
 use crate::{all_paths, inner::PathInner, try_from};
-use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize)]

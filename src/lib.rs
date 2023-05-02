@@ -50,7 +50,7 @@
 //! # use x_path::AbsoluteFolderPath;
 //! #
 //! #[test]
-//! fn test() -> anyhow::Result<()> {
+//! fn test() -> crate::Result<()> {
 //!     // imagine that the path string is read from a conf.toml file:
 //!     let dir = AbsoluteFolderPath::new(r"~/dir1//..\dir2");
 //!     
@@ -118,8 +118,7 @@
 //! Other:
 //! - Displays resolved paths or use `.native_string()` or `format("{path:#}")` for outputting OS native string.
 //! - Error:
-//!     - handling with [anyhow](https://crates.io/crates/anyhow) aims to produce comprehensive
-//!       human-readable messages instead of machine-parsable ones.
+//!     - comprehensive human-readable messages instead of machine-parsable ones.
 //!     - the message always includes the path in question.
 //!     - the message includes the current working directory for relative paths.
 //!
@@ -286,9 +285,8 @@
 //!     - `.segments`, `.with_segments`, `.set_segments`. For segments starting from the end use `.segments` + `.rev`.
 //!     - `.exists`
 //! - Folder:
-//!     - `.push`, `.pushing` pushes one or more path segments.
+//!     - `.join`, `.joining` pushes one or more path segments.
 //!     - `.pop`, `.popping` pops the last path segment.
-//!     - `.join`, `.joining` appends a relative dir.
 //! - File:
 //!     - `.file_name`, `.with_file_name`, `.set_file_name`, `.file_stem`, `.with_file_stem`, `.set_file_stem`
 //!     - `.extensions`: iterator over extensions
@@ -300,6 +298,7 @@
 //! - [Naming Files, Paths, and Namespaces](https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file)
 //! - [Wikipedia: Filenames - Comparison of filename limitations](https://en.wikipedia.org/wiki/Filename#Comparison_of_filename_limitations)
 
+mod error;
 mod ext;
 mod inner;
 mod iter;
@@ -309,9 +308,13 @@ mod path;
 
 const SLASH: [char; 2] = ['/', '\\'];
 
+use error::ensure;
+pub use error::PathError;
 pub use inner::{PathValues, StrValues, TryExist};
 pub use iter::*;
 pub use path::*;
+
+pub type Result<T> = std::result::Result<T, PathError>;
 
 #[cfg(test)]
 #[test]

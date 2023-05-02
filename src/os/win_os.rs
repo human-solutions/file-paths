@@ -1,6 +1,6 @@
 use super::OsGroup;
 use crate::ext::PathBufExt;
-use anyhow::Result;
+use crate::Result;
 
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub(crate) struct WinOS {}
@@ -18,12 +18,10 @@ impl OsGroup for WinOS {
     }
 
     fn drive_letter() -> Result<char> {
-        use anyhow::bail;
-
         let cwd = std::env::current_dir()?.try_to_string()?;
         match crate::os::drive::win_drive(&cwd) {
             Some(drive) => Ok(drive),
-            None => bail!("could not extract drive letter from {cwd}"),
+            None => Err(format!("could not extract drive letter from {cwd}").into()),
         }
     }
 
@@ -43,7 +41,6 @@ impl OsGroup for WinOS {
 
 pub fn home_dir() -> Result<String> {
     unsafe {
-        use anyhow::bail;
         use std::ffi::c_void;
         use std::ffi::OsString;
         use std::os::windows::ffi::OsStringExt;
@@ -72,14 +69,11 @@ pub fn home_dir() -> Result<String> {
                     }
                     Ok(s)
                 }
-                Err(s) => bail!(
-                    "invalid characters in user home directory: {}",
-                    s.to_string_lossy()
-                ),
+                Err(s) => Err(format!("invalid characters in user home directory: {s:?}")),
             }
         } else {
             windows::Win32::System::Com::CoTaskMemFree(path_ptr as *const c_void);
-            bail!("could not resolve the user's home directory")
+            Err(format!("could not resolve the user's home directory").into())
         }
     }
 }

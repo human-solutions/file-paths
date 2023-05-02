@@ -1,7 +1,7 @@
 use crate::os::CurrentOS;
 use crate::{all_dirs, AbsoluteFolderPath, AnyFilePath, AnyPath, RelativeFolderPath};
 use crate::{all_paths, inner::PathInner, try_from};
-use anyhow::Result;
+use crate::{PathError, Result};
 use either::Either;
 use serde::{Deserialize, Serialize};
 
@@ -26,8 +26,13 @@ impl AnyFolderPath {
         }
     }
 
-    pub fn with_file(&self, file: AnyFilePath) -> AnyFilePath {
-        AnyFilePath(self.0.appending(file.as_str()))
+    pub fn with_file<F>(&self, file: F) -> Result<AnyFilePath>
+    where
+        F: TryInto<AnyFilePath, Error = PathError>,
+    {
+        let file: AnyFilePath = file.try_into()?;
+        let path = self.0.path.clone() + file.as_str();
+        path.try_into()
     }
 }
 
@@ -44,9 +49,9 @@ impl From<AbsoluteFolderPath> for AnyFolderPath {
 }
 
 impl TryFrom<AnyPath> for AnyFolderPath {
-    type Error = anyhow::Error;
+    type Error = crate::PathError;
 
     fn try_from(value: AnyPath) -> std::result::Result<Self, Self::Error> {
-        AnyFolderPath::try_from(value.0.as_str())
+        value.0.as_str().try_into()
     }
 }

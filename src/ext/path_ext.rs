@@ -1,29 +1,28 @@
+use crate::Result;
 use std::path::{Path, PathBuf};
 
-use anyhow::bail;
-
 pub(crate) trait PathBufExt {
-    fn try_to_string(&self) -> anyhow::Result<String>;
+    fn try_to_string(&self) -> Result<String>;
 }
 
 impl PathBufExt for PathBuf {
-    fn try_to_string(&self) -> anyhow::Result<String> {
-        let Some(s) = self.as_os_str().to_str() else {
-            bail!("Non UTF-8 characters in path: {}", self.to_string_lossy())
-        };
-        Ok(s.to_string())
+    fn try_to_string(&self) -> Result<String> {
+        match self.as_os_str().to_str() {
+            Some(s) => Ok(s.to_string()),
+            None => Err(format!("non UTF-8 characters in path: {self:?}").into()),
+        }
     }
 }
 
 pub(crate) trait PathExt {
-    fn try_to_str(&self) -> anyhow::Result<&str>;
+    fn try_to_str(&self) -> Result<&str>;
 }
 
 impl PathExt for Path {
-    fn try_to_str(&self) -> anyhow::Result<&str> {
-        let Some(s) = self.as_os_str().to_str() else {
-            bail!("Non UTF-8 characters in path: {}", self.to_string_lossy())
-        };
-        Ok(s)
+    fn try_to_str(&self) -> Result<&str> {
+        match self.as_os_str().to_str() {
+            Some(s) => Ok(s),
+            None => Err(format!("non UTF-8 characters in path: {self:?}").into()),
+        }
     }
 }

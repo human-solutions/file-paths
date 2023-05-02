@@ -1,7 +1,8 @@
 use std::borrow::Cow;
 
-use anyhow::{ensure, Context, Result};
+use crate::Result;
 
+use crate::error::{ensure, Context};
 use crate::{ext::CharExt, os::env, SLASH};
 
 use crate::os::OsGroup;
@@ -60,10 +61,9 @@ pub(crate) fn expand<OS: OsGroup>(path: &str) -> Result<Cow<str>> {
                         let start = if start_curly { 2 } else { 1 };
                         let end = key.len() - 1;
 
-                        ensure!(
-                            end - start > 0,
-                            "empty environment variable in path: {path}"
-                        );
+                        ensure(end - start > 0, || {
+                            format!("empty environment variable in path: {path}")
+                        })?;
 
                         expanded.extend(env::var(&key[start..end])?.drain(..));
                         key.clear();

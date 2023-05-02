@@ -13,7 +13,6 @@ categories = ["filesystem", "config"]
 strict = []
 
 [dependencies]
-anyhow = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 either = "1.8"
 

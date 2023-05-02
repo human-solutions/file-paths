@@ -3,7 +3,7 @@
 macro_rules! try_exist {
     ($struct:ident) => {
         impl<P: $crate::PathValues> $crate::TryExist<P> for $struct {
-            fn try_exist(value: P) -> anyhow::Result<Self> {
+            fn try_exist(value: P) -> $crate::Result<Self> {
                 let me = Self(PathInner::new(value)?);
                 me.validate_fs()?;
                 Ok(me)

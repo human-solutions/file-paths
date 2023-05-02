@@ -1,7 +1,7 @@
 use crate::os::CurrentOS;
 use crate::{all_paths, inner::PathInner, serde_exist, serde_expanded, try_exist, try_from};
+use crate::{ensure, Result};
 use crate::{AbsoluteFilePath, AbsoluteFolderPath};
-use anyhow::{ensure, Result};
 use either::Either;
 use serde::{Deserialize, Serialize};
 
@@ -23,8 +23,7 @@ impl AbsolutePath {
 
     pub(crate) fn validate_fs(&self) -> Result<()> {
         let p = self.0.as_path();
-        ensure!(p.exists(), "path doesn't exist: {}", self.0);
-        Ok(())
+        ensure(p.exists(), || format!("path doesn't exist: {}", self.0))
     }
 
     pub fn exists(&self) -> bool {

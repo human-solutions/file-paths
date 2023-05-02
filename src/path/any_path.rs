@@ -1,10 +1,10 @@
 use crate::os::CurrentOS;
+use crate::Result;
 use crate::{all_paths, inner::PathInner, try_from};
 use crate::{
     AbsoluteFilePath, AbsoluteFolderPath, AnyFilePath, AnyFolderPath, RelativeFilePath,
     RelativeFolderPath,
 };
-use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -22,7 +22,7 @@ pub enum ConcretePath {
 }
 
 impl AnyPath {
-    pub fn is_abs(&self) -> bool {
+    pub fn is_absolute(&self) -> bool {
         self.0.is_absolute()
     }
 
@@ -30,16 +30,16 @@ impl AnyPath {
         self.0.is_file()
     }
 
-    pub fn is_dir(&self) -> bool {
+    pub fn is_folder(&self) -> bool {
         self.0.is_folder()
     }
 
-    pub fn is_rel(&self) -> bool {
+    pub fn is_relative(&self) -> bool {
         !self.0.is_absolute()
     }
 
     pub fn to_concrete(self) -> ConcretePath {
-        match (self.is_abs(), self.is_dir()) {
+        match (self.is_absolute(), self.is_folder()) {
             (true, true) => ConcretePath::AbsDir(AbsoluteFolderPath(self.0)),
             (false, true) => ConcretePath::RelDir(RelativeFolderPath(self.0)),
             (true, false) => ConcretePath::AbsFile(AbsoluteFilePath(self.0)),

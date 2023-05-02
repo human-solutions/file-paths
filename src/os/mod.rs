@@ -19,7 +19,7 @@ pub use test_os::{LinTestOS, WinTestOS};
 mod drive;
 mod env;
 
-use anyhow::Result;
+use crate::Result;
 pub(crate) use env::contract;
 pub(crate) use env::expand;
 

@@ -1,6 +1,6 @@
 use super::drive::{add_win_drive, remove_win_drive};
 use crate::os::OsGroup;
-use anyhow::Result;
+use crate::Result;
 
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct LinTestOS {}
@@ -9,11 +9,11 @@ impl OsGroup for LinTestOS {
     const SEP: char = '/';
     const SEP_STR: &'static str = "/";
 
-    fn current() -> anyhow::Result<String> {
+    fn current() -> Result<String> {
         Ok(String::from("/var/test"))
     }
 
-    fn home() -> anyhow::Result<String> {
+    fn home() -> Result<String> {
         Ok(String::from("/home/test"))
     }
 
@@ -52,10 +52,10 @@ impl OsGroup for WinTestOS {
         Ok(add_win_drive(path, drive, inner))
     }
 
-    fn current() -> anyhow::Result<String> {
+    fn current() -> Result<String> {
         Ok(String::from(r"C:\current"))
     }
-    fn home() -> anyhow::Result<String> {
+    fn home() -> Result<String> {
         Ok(String::from(r"C:\User\test\"))
     }
     fn drive_letter() -> Result<char> {

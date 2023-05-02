@@ -1,6 +1,6 @@
 use crate::ext::PathBufExt;
 use crate::os::OsGroup;
-use anyhow::Result;
+use crate::Result;
 
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub(crate) struct LinOS {}
@@ -36,7 +36,6 @@ impl OsGroup for LinOS {
 
 // https://github.com/rust-lang/rust/blob/2682b88c526d493edeb2d3f2df358f44db69b73f/library/std/src/sys/unix/os.rs#L595
 pub fn home_dir() -> Result<String> {
-    use anyhow::bail;
     use std::env;
     use std::ffi::{CStr, OsString};
     use std::mem;
@@ -48,17 +47,13 @@ pub fn home_dir() -> Result<String> {
         .and_then(|h| if h.is_empty() { None } else { Some(h) })
         .or_else(|| unsafe { fallback() });
 
-    if let Some(os_str) = os_str {
-        match os_str.into_string() {
-            Ok(s) => return Ok(s),
-            Err(s) => bail!(
-                "invalid characters in user home directory: {}",
-                s.to_string_lossy()
-            ),
-        }
+    return if let Some(os_str) = os_str {
+        os_str
+            .into_string()
+            .map_err(|s| format!("invalid characters in user home directory: {s:?}").into())
     } else {
-        bail!("could not resolve the user's home directory")
-    }
+        Err("could not resolve the user's home directory".into())
+    };
 
     #[cfg(any(target_os = "android", target_os = "ios", target_os = "emscripten"))]
     unsafe fn fallback() -> Option<OsString> {

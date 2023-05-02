@@ -20,11 +20,11 @@ macro_rules! all_files {
                 self.0.file_name()
             }
 
-            pub fn set_file_name(&mut self, file_name: &str) -> anyhow::Result<()> {
+            pub fn set_file_name(&mut self, file_name: &str) -> $crate::Result<()> {
                 self.0.set_file_name(file_name)
             }
 
-            pub fn with_file_name(&self, file_name: &str) -> anyhow::Result<Self> {
+            pub fn with_file_name(&self, file_name: &str) -> $crate::Result<Self> {
                 Ok(Self(self.0.with_file_name(file_name)?))
             }
 
@@ -32,11 +32,11 @@ macro_rules! all_files {
                 self.0.file_stem()
             }
 
-            pub fn set_file_stem(&mut self, file_stem: &str) -> anyhow::Result<()> {
+            pub fn set_file_stem(&mut self, file_stem: &str) -> $crate::Result<()> {
                 self.0.set_file_stem(file_stem)
             }
 
-            pub fn with_file_stem(&mut self, file_stem: &str) -> anyhow::Result<Self> {
+            pub fn with_file_stem(&mut self, file_stem: &str) -> $crate::Result<Self> {
                 Ok(Self(self.0.with_file_stem(file_stem)?))
             }
         }

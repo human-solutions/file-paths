@@ -1,15 +1,15 @@
-use anyhow::Result;
+use crate::Result;
 
 pub(crate) fn var(key: &str) -> Result<String> {
     #[cfg(not(test))]
     {
-        use anyhow::Context;
-        std::env::var(key).context(format!("environment variable '{key}' is not defined"))
+        std::env::var(key)
+            .map_err(|e| format!("environment variable '{key}' is not defined: {e}").into())
     }
     #[cfg(test)]
     {
         if key == "FAIL" {
-            anyhow::bail!("environment variable '{key}' is not defined")
+            return Err(format!("environment variable '{key}' is not defined").into());
         }
         let key = key.to_lowercase();
         Ok(format!("={key}="))

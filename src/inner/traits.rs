@@ -1,7 +1,7 @@
 use super::PathInner;
 use crate::os::OsGroup;
 use crate::RelativeFolderPath;
-use anyhow::{bail, Result};
+use crate::Result;
 use serde::Serialize;
 use std::{
     fmt::{Debug, Display},
@@ -33,11 +33,11 @@ impl<OS: OsGroup> Debug for PathInner<OS> {
 
 pub trait TryExist<T>: Sized {
     /// Performs the conversion.
-    fn try_exist(value: T) -> anyhow::Result<Self>;
+    fn try_exist(value: T) -> Result<Self>;
 }
 
 impl<OS: OsGroup> Serialize for PathInner<OS> {
-    fn serialize<S>(&self, ser: S) -> Result<S::Ok, S::Error>
+    fn serialize<S>(&self, ser: S) -> std::result::Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
     {
@@ -97,10 +97,9 @@ impl PathValues for RelativeFolderPath {
 
 impl PathValues for &Path {
     fn values(&self) -> Result<Vec<&str>> {
-        match self.to_str() {
-            Some(path) => Ok(vec![path]),
-            None => bail!("non-utf8 characters in path: {self:?}"),
-        }
+        self.to_str()
+            .map(|s| vec![s])
+            .ok_or_else(|| format!("non-utf8 characters in path: {self:?}").into())
     }
 }
 

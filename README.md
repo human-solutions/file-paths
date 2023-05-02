@@ -75,7 +75,7 @@ A path that ends with `/` or `\` is a folder.
 
 ```rust
 #[test]
-fn test() -> anyhow::Result<()> {
+fn test() -> crate::Result<()> {
     // imagine that the path string is read from a conf.toml file:
     let dir = AbsoluteFolderPath::new(r"~/dir1//..\dir2");
     
@@ -143,8 +143,7 @@ Non-goals:
 Other:
 - Displays resolved paths or use `.native_string()` or `format("{path:#}")` for outputting OS native string.
 - Error:
-    - handling with [anyhow](https://crates.io/crates/anyhow) aims to produce comprehensive
-      human-readable messages instead of machine-parsable ones.
+    - comprehensive human-readable messages instead of machine-parsable ones.
     - the message always includes the path in question.
     - the message includes the current working directory for relative paths.
 
@@ -311,9 +310,8 @@ Functions provided per type.
     - `.segments`, `.with_segments`, `.set_segments`. For segments starting from the end use `.segments` + `.rev`.
     - `.exists`
 - Folder:
-    - `.push`, `.pushing` pushes one or more path segments.
+    - `.join`, `.joining` pushes one or more path segments.
     - `.pop`, `.popping` pops the last path segment.
-    - `.join`, `.joining` appends a relative dir.
 - File:
     - `.file_name`, `.with_file_name`, `.set_file_name`, `.file_stem`, `.with_file_stem`, `.set_file_stem`
     - `.extensions`: iterator over extensions

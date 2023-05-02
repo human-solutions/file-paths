@@ -8,8 +8,8 @@ mod traits;
 pub(crate) use path::PathInner;
 pub use traits::{PathValues, StrValues, TryExist};
 
+use crate::Result;
 use crate::{ext::PathStrExt, SLASH};
-use anyhow::Result;
 
 /// expects a path without drive letters
 pub(crate) fn str_segments(path: &str) -> Result<Vec<&str>> {

@@ -1,4 +1,4 @@
-use anyhow::{ensure, Result};
+use crate::{error::ensure, Result};
 use serde::Deserialize;
 use std::marker::PhantomData;
 use std::ops::Range;
@@ -86,34 +86,27 @@ impl<OS: OsGroup> PathInner<OS> {
     }
 
     pub(crate) fn ensure_absolute(&self) -> Result<()> {
-        ensure!(
-            self.is_absolute(),
-            "path is not absolute (it should start with a slash): {self}"
-        );
-        Ok(())
+        ensure(self.is_absolute(), || {
+            format!("path is not absolute (it should start with a slash): {self}")
+        })
     }
 
     pub(crate) fn ensure_relative(&self) -> Result<()> {
-        ensure!(
-            self.is_relative(),
-            "path is not relative (it should not start with a slash): {self}"
-        );
-        Ok(())
+        ensure(self.is_relative(), || {
+            format!("path is not relative (it should not start with a slash): {self}")
+        })
     }
 
     pub(crate) fn ensure_file(&self) -> Result<()> {
-        ensure!(
-            self.is_file(),
-            "path is not a file (it should not end with a slash): {self}"
-        );
-        Ok(())
+        ensure(self.is_file(), || {
+            format!("path is not a file (it should not end with a slash): {self}")
+        })
     }
+
     pub(crate) fn ensure_folder(&self) -> Result<()> {
-        ensure!(
-            self.is_folder(),
-            "path is not a folder (it doesn't end with a slash): {self}"
-        );
-        Ok(())
+        ensure(self.is_folder(), || {
+            format!("path is not a folder (it doesn't end with a slash): {self}")
+        })
     }
 
     pub(crate) fn relative_from(&self, segments: usize) -> Self {
@@ -227,7 +220,6 @@ impl<OS: OsGroup> PathInner<OS> {
     }
 
     pub(crate) fn set_file_stem(&mut self, file_stem: &str) -> Result<()> {
-        ensure!(!file_stem.is_empty(), "An empty file stem is not valid");
         let range = self.file_stem_range();
         let mut path = self.path[..range.start].to_string();
         path.push_str(file_stem);
@@ -259,13 +251,6 @@ impl<OS: OsGroup> PathInner<OS> {
     fn with_path(&self, path: &str) -> Self {
         PathInner {
             path: path.to_string(),
-            t: self.t,
-        }
-    }
-
-    pub(crate) fn appending(&self, path: &str) -> Self {
-        PathInner {
-            path: self.path.clone() + path,
             t: self.t,
         }
     }
