@@ -69,7 +69,7 @@ pub fn home_dir() -> Result<String> {
                     }
                     Ok(s)
                 }
-                Err(s) => Err(format!("invalid characters in user home directory: {s:?}")),
+                Err(s) => Err(format!("invalid characters in user home directory: {s:?}").into()),
             }
         } else {
             windows::Win32::System::Com::CoTaskMemFree(path_ptr as *const c_void);
