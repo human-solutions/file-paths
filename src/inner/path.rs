@@ -248,9 +248,17 @@ impl<OS: OsGroup> PathInner<OS> {
             t: self.t,
         }
     }
-    fn with_path(&self, path: &str) -> Self {
+
+    pub(crate) fn with_path(&self, path: &str) -> Self {
         PathInner {
             path: path.to_string(),
+            t: self.t,
+        }
+    }
+
+    pub(crate) fn with_path_appended(&self, path: &str) -> Self {
+        PathInner {
+            path: self.path.to_string() + path,
             t: self.t,
         }
     }

@@ -1,5 +1,5 @@
 use crate::os::CurrentOS;
-use crate::{all_dirs, AbsoluteFolderPath, RelativeFilePath};
+use crate::{all_dirs, AbsoluteFolderPath, RelativeFilePath, RelativePath};
 use crate::{all_paths, inner::PathInner, try_from};
 use crate::{PathError, Result};
 use serde::{Deserialize, Serialize};
@@ -28,12 +28,15 @@ impl RelativeFolderPath {
         path.try_into()
     }
 
-    pub fn with_file<F>(&self, file: F) -> Result<RelativeFilePath>
-    where
-        F: TryInto<RelativeFilePath, Error = PathError>,
-    {
-        let file: RelativeFilePath = file.try_into()?;
-        let path = self.0.path.clone() + &file.0.path;
-        path.try_into()
+    pub fn with_file(&self, file: RelativeFilePath) -> RelativeFilePath {
+        RelativeFilePath(self.0.with_path_appended(file.as_str()))
+    }
+
+    pub fn with_folder(&self, folder: &RelativeFolderPath) -> RelativeFolderPath {
+        RelativeFolderPath(self.0.with_path_appended(folder.as_str()))
+    }
+
+    pub fn to_relative(self) -> RelativePath {
+        RelativePath(self.0)
     }
 }

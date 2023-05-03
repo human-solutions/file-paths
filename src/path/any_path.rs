@@ -1,10 +1,13 @@
+use std::path::Path;
+
 use crate::os::CurrentOS;
-use crate::Result;
 use crate::{all_paths, inner::PathInner, try_from};
 use crate::{
     AbsoluteFilePath, AbsoluteFolderPath, AnyFilePath, AnyFolderPath, RelativeFilePath,
     RelativeFolderPath,
 };
+use crate::{PathError, Result};
+use either::Either;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -15,10 +18,45 @@ all_paths!(AnyPath);
 try_from!(AnyPath);
 
 pub enum ConcretePath {
-    AbsDir(AbsoluteFolderPath),
-    RelDir(RelativeFolderPath),
+    AbsFolder(AbsoluteFolderPath),
+    RelFolder(RelativeFolderPath),
     AbsFile(AbsoluteFilePath),
     RelFile(RelativeFilePath),
+}
+
+impl ConcretePath {
+    fn new(path: &Path) -> Result<Self> {
+        match (path.to_str(), path.is_file()) {
+            (Some(file), true) => Self::new_file(file),
+            (Some(folder), false) => Self::new_folder(folder),
+            (None, _) => Err("".into()),
+        }
+    }
+    fn new_file(file: &str) -> Result<Self> {
+        let file: AnyFilePath = file.try_into()?;
+
+        Ok(match file.to_concrete() {
+            Either::Left(abs_file) => Self::AbsFile(abs_file),
+            Either::Right(rel_file) => Self::RelFile(rel_file),
+        })
+    }
+
+    fn new_folder(folder: &str) -> Result<Self> {
+        let folder: AnyFolderPath = folder.try_into()?;
+
+        Ok(match folder.to_concrete() {
+            Either::Left(abs_folder) => Self::AbsFolder(abs_folder),
+            Either::Right(rel_folder) => Self::RelFolder(rel_folder),
+        })
+    }
+}
+
+impl TryFrom<&Path> for ConcretePath {
+    type Error = PathError;
+
+    fn try_from(value: &Path) -> std::result::Result<Self, Self::Error> {
+        ConcretePath::new(value)
+    }
 }
 
 impl AnyPath {
@@ -40,8 +78,8 @@ impl AnyPath {
 
     pub fn to_concrete(self) -> ConcretePath {
         match (self.is_absolute(), self.is_folder()) {
-            (true, true) => ConcretePath::AbsDir(AbsoluteFolderPath(self.0)),
-            (false, true) => ConcretePath::RelDir(RelativeFolderPath(self.0)),
+            (true, true) => ConcretePath::AbsFolder(AbsoluteFolderPath(self.0)),
+            (false, true) => ConcretePath::RelFolder(RelativeFolderPath(self.0)),
             (true, false) => ConcretePath::AbsFile(AbsoluteFilePath(self.0)),
             (false, false) => ConcretePath::RelFile(RelativeFilePath(self.0)),
         }

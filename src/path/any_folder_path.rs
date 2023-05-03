@@ -26,6 +26,15 @@ impl AnyFolderPath {
         }
     }
 
+    /// Converts an AnyFolderPath to AbsoluteFolderPath. If the path is already
+    /// absolute then it is used otherwise it is appended to the root.
+    pub fn to_absolute(self, root: &AbsoluteFolderPath) -> AbsoluteFolderPath {
+        match self.0.is_absolute() {
+            true => AbsoluteFolderPath(self.0),
+            false => root.with_folder(&RelativeFolderPath(self.0)),
+        }
+    }
+
     pub fn with_file<F>(&self, file: F) -> Result<AnyFilePath>
     where
         F: TryInto<AnyFilePath, Error = PathError>,

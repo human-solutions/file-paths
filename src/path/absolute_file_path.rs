@@ -1,10 +1,10 @@
 use crate::error::ensure;
 use crate::os::CurrentOS;
-use crate::Result;
 use crate::{
     all_files, all_paths, inner::PathInner, serde_exist, serde_expanded, try_exist, try_from,
 };
 use crate::{AbsoluteFolderPath, RelativeFolderPath};
+use crate::{AbsolutePath, Result};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -47,5 +47,9 @@ impl AbsoluteFilePath {
 
     pub fn to_relative(&self, from_segment_index: usize) -> RelativeFolderPath {
         RelativeFolderPath(self.0.relative_from(from_segment_index))
+    }
+
+    pub fn to_absolute(self) -> AbsolutePath {
+        self.into()
     }
 }

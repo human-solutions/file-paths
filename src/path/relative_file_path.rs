@@ -1,7 +1,7 @@
 use crate::os::CurrentOS;
-use crate::Result;
 use crate::{all_files, AbsoluteFolderPath, RelativeFolderPath};
 use crate::{all_paths, inner::PathInner, try_from};
+use crate::{RelativePath, Result};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -25,5 +25,15 @@ impl RelativeFilePath {
 
     pub fn with_root(&self, root: AbsoluteFolderPath) -> AbsoluteFolderPath {
         AbsoluteFolderPath(self.0.with_root(root.as_str()))
+    }
+
+    pub fn to_relative(self) -> RelativePath {
+        self.into()
+    }
+}
+
+impl AsRef<RelativeFilePath> for RelativeFilePath {
+    fn as_ref(&self) -> &RelativeFilePath {
+        self
     }
 }

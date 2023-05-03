@@ -13,11 +13,24 @@ macro_rules! all_paths {
             pub fn as_path(&self) -> &std::path::Path {
                 self.0.as_path()
             }
+
+            pub fn starts_with<S: AsRef<str>>(&self, base: S) -> bool {
+                self.as_str().starts_with(base.as_ref())
+            }
+
+            pub fn ends_with<S: AsRef<str>>(&self, value: S) -> bool {
+                self.as_str().ends_with(value.as_ref())
+            }
         }
 
         impl std::convert::AsRef<std::path::Path> for $struct {
             fn as_ref(&self) -> &std::path::Path {
                 self.0.as_path()
+            }
+        }
+        impl std::convert::AsRef<str> for $struct {
+            fn as_ref(&self) -> &str {
+                self.0.as_str()
             }
         }
 
@@ -55,4 +68,14 @@ macro_rules! all_paths {
             }
         }
     };
+}
+
+#[test]
+fn test_as_ref_str() {
+    use crate::AbsoluteFolderPath;
+    let dir1: AbsoluteFolderPath = "/dir1/dir2/".try_into().unwrap();
+    let dir2: AbsoluteFolderPath = "/dir1/".try_into().unwrap();
+
+    assert!(dir1.starts_with(&dir2));
+    assert!(!dir2.starts_with(&dir1));
 }

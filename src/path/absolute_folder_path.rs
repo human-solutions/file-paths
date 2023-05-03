@@ -1,8 +1,6 @@
 use crate::os::CurrentOS;
-use crate::{all_dirs, PathError, RelativeFolderPath};
-use crate::{
-    all_paths, inner::PathInner, serde_exist, serde_expanded, try_exist, try_from, AbsoluteFilePath,
-};
+use crate::{all_dirs, AbsoluteFilePath, AbsolutePath, RelativeFilePath, RelativeFolderPath};
+use crate::{all_paths, inner::PathInner, serde_exist, serde_expanded, try_exist, try_from};
 use crate::{ensure, Result};
 use serde::{Deserialize, Serialize};
 
@@ -39,12 +37,29 @@ impl AbsoluteFolderPath {
         self.0.remove_root(&root.0.path).map(RelativeFolderPath)
     }
 
-    pub fn with_file<F>(&self, file: F) -> std::result::Result<AbsoluteFilePath, PathError>
-    where
-        F: TryInto<AbsoluteFilePath, Error = PathError>,
-    {
-        let file: AbsoluteFilePath = file.try_into()?;
-        let path = self.0.path.clone() + &file.0.path;
-        path.try_into()
+    /// Convert this [AbsoluteFolderPath] to an [AbsoluteFilePath] by providing a [RelativeFilePath].
+    ///
+    /// ```rust
+    /// # use x_path::{AbsoluteFolderPath, RelativeFilePath};
+    /// # fn main() -> Result<(), String> {
+    /// let folder: AbsoluteFolderPath = "./src/".try_into()?;
+    /// let cargo_location: RelativeFilePath = "../Cargo.toml".try_into()?;
+    /// let cargo_path = folder.with_file(&cargo_location);
+    ///
+    /// // alternatively, you can convert on the fly into a RelativeFilePath like this:
+    /// let lib_file = folder.with_file(&"lib.rs".try_into()?);
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn with_file(&self, file: &RelativeFilePath) -> AbsoluteFilePath {
+        AbsoluteFilePath(self.0.with_path_appended(file.as_str()))
+    }
+
+    pub fn with_folder(&self, folder: &RelativeFolderPath) -> Self {
+        Self(self.0.with_path_appended(folder.as_str()))
+    }
+
+    pub fn to_absolute(self) -> AbsolutePath {
+        self.into()
     }
 }

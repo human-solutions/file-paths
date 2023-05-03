@@ -1,7 +1,7 @@
 use crate::os::CurrentOS;
-use crate::Result;
 use crate::{all_paths, inner::PathInner, try_from};
 use crate::{AbsoluteFilePath, AnyFolderPath, AnyPath, RelativeFilePath};
+use crate::{AbsoluteFolderPath, Result};
 use either::Either;
 use serde::{Deserialize, Serialize};
 
@@ -22,6 +22,13 @@ impl AnyFilePath {
         match self.0.is_absolute() {
             true => Either::Left(AbsoluteFilePath(self.0)),
             false => Either::Right(RelativeFilePath(self.0)),
+        }
+    }
+
+    pub fn to_absolute_file(self, root: &AbsoluteFolderPath) -> AbsoluteFilePath {
+        match self.0.is_absolute() {
+            true => AbsoluteFilePath(self.0),
+            false => root.with_file(&RelativeFilePath(self.0)),
         }
     }
 

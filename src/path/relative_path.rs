@@ -25,3 +25,15 @@ impl RelativePath {
         }
     }
 }
+
+impl From<RelativeFilePath> for RelativePath {
+    fn from(value: RelativeFilePath) -> Self {
+        RelativePath(value.0)
+    }
+}
+
+impl From<RelativeFolderPath> for RelativePath {
+    fn from(value: RelativeFolderPath) -> Self {
+        RelativePath(value.0)
+    }
+}

@@ -42,6 +42,12 @@ impl From<std::io::Error> for PathError {
     }
 }
 
+impl From<PathError> for String {
+    fn from(value: PathError) -> Self {
+        value.to_string()
+    }
+}
+
 pub(crate) trait Context<T> {
     fn context<S: AsRef<str>>(self, msg: S) -> crate::Result<T>;
 }

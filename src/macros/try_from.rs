@@ -35,5 +35,37 @@ macro_rules! try_from {
                 Ok(value.clone())
             }
         }
+
+        impl TryFrom<&[&str]> for $struct {
+            type Error = $crate::PathError;
+
+            fn try_from(value: &[&str]) -> std::result::Result<Self, Self::Error> {
+                Self(PathInner::new(value)?).validate()
+            }
+        }
+
+        impl TryFrom<&[String]> for $struct {
+            type Error = $crate::PathError;
+
+            fn try_from(value: &[String]) -> std::result::Result<Self, Self::Error> {
+                Self(PathInner::new(value)?).validate()
+            }
+        }
+
+        impl TryFrom<Vec<String>> for $struct {
+            type Error = $crate::PathError;
+
+            fn try_from(value: Vec<String>) -> std::result::Result<Self, Self::Error> {
+                Self(PathInner::new(value)?).validate()
+            }
+        }
+
+        impl TryFrom<Vec<&str>> for $struct {
+            type Error = $crate::PathError;
+
+            fn try_from(value: Vec<&str>) -> std::result::Result<Self, Self::Error> {
+                Self(PathInner::new(value)?).validate()
+            }
+        }
     };
 }

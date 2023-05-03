@@ -49,9 +49,15 @@ pub trait StrValues {
     fn str_vec(&self) -> Vec<&str>;
 }
 
-impl StrValues for [&str] {
+impl StrValues for &[&str] {
     fn str_vec(&self) -> Vec<&str> {
         self.to_vec()
+    }
+}
+
+impl StrValues for &[String] {
+    fn str_vec(&self) -> Vec<&str> {
+        self.iter().map(|s| s.as_str()).collect()
     }
 }
 

@@ -37,3 +37,15 @@ impl AbsolutePath {
         }
     }
 }
+
+impl From<AbsoluteFolderPath> for AbsolutePath {
+    fn from(value: AbsoluteFolderPath) -> Self {
+        AbsolutePath(value.0)
+    }
+}
+
+impl From<AbsoluteFilePath> for AbsolutePath {
+    fn from(value: AbsoluteFilePath) -> Self {
+        AbsolutePath(value.0)
+    }
+}

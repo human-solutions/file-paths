@@ -4,7 +4,7 @@ version = "0.1.0-alpha.0"
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/human-solutions/cross-path"
-description = "x-path is a if-it-compiles-it-works solution for safe Rust paths with abs/rel and file/dir variants for API safety and cross platform support"
+description = "x-path is an attempt at an if-it-compiles-it-works solution for safe Rust paths with API safe types (abs/rel and file/folder variants) and cross platform support"
 categories = ["filesystem", "config"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
