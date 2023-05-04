@@ -27,8 +27,8 @@ impl RelativeFilePath {
         AbsoluteFilePath(self.0.with_root(root.as_str()))
     }
 
-    pub fn to_relative(self) -> RelativePath {
-        self.into()
+    pub fn to_relative(&self) -> RelativePath {
+        self.clone().into()
     }
 }
 

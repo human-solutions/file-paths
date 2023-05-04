@@ -31,8 +31,8 @@ impl RelativeFolderPath {
         RelativeFolderPath(self.0.with_path_appended(folder.as_str()))
     }
 
-    pub fn to_relative(self) -> RelativePath {
-        RelativePath(self.0)
+    pub fn to_relative(&self) -> RelativePath {
+        RelativePath(self.0.clone())
     }
 }
 

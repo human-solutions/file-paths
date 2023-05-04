@@ -18,17 +18,17 @@ impl AnyFilePath {
         Ok(self)
     }
 
-    pub fn to_concrete(self) -> Either<AbsoluteFilePath, RelativeFilePath> {
+    pub fn to_concrete(&self) -> Either<AbsoluteFilePath, RelativeFilePath> {
         match self.0.is_absolute() {
-            true => Either::Left(AbsoluteFilePath(self.0)),
-            false => Either::Right(RelativeFilePath(self.0)),
+            true => Either::Left(AbsoluteFilePath(self.0.clone())),
+            false => Either::Right(RelativeFilePath(self.0.clone())),
         }
     }
 
-    pub fn to_absolute_file(self, root: &AbsoluteFolderPath) -> AbsoluteFilePath {
+    pub fn to_absolute_file(&self, root: &AbsoluteFolderPath) -> AbsoluteFilePath {
         match self.0.is_absolute() {
-            true => AbsoluteFilePath(self.0),
-            false => root.with_file(&RelativeFilePath(self.0)),
+            true => AbsoluteFilePath(self.0.clone()),
+            false => root.with_file(&RelativeFilePath(self.0.clone())),
         }
     }
 

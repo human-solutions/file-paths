@@ -41,20 +41,20 @@ impl AbsoluteFilePath {
         AbsoluteFolderPath(self.0.drop_file())
     }
 
-    pub fn removing_root(&self, root: &AbsoluteFolderPath) -> Option<RelativeFilePath> {
+    pub fn removing_root(&self, root: &AbsoluteFolderPath) -> Result<RelativeFilePath> {
         self.0.removing_root(root.as_str()).map(RelativeFilePath)
     }
 
-    pub fn to_relative(self, from_segment_index: usize) -> RelativeFolderPath {
+    pub fn to_relative(&self, from_segment_index: usize) -> RelativeFolderPath {
         RelativeFolderPath(self.0.relative_from(from_segment_index))
     }
 
-    pub fn to_absolute(self) -> AbsolutePath {
-        self.into()
+    pub fn to_absolute(&self) -> AbsolutePath {
+        self.clone().into()
     }
 
-    pub fn to_any_file(self) -> AnyFilePath {
-        AnyFilePath(self.0)
+    pub fn to_any_file(&self) -> AnyFilePath {
+        AnyFilePath(self.0.clone())
     }
 }
 
@@ -62,7 +62,7 @@ impl AbsoluteFilePath {
 fn test_convert_to_abstract() {
     let p: AbsoluteFilePath = "/dir/file.txt".try_into().unwrap();
 
-    let abs_path = p.clone().to_absolute();
+    let abs_path = p.to_absolute();
     assert_eq!(format!("{abs_path:?}"), "AbsolutePath(/dir/file.txt)");
 
     let abs_path = p.to_any_file();

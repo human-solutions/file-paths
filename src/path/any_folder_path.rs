@@ -1,7 +1,9 @@
 use crate::os::CurrentOS;
-use crate::{all_dirs, AbsoluteFolderPath, AnyFilePath, AnyPath, RelativeFolderPath};
+use crate::Result;
+use crate::{
+    all_dirs, AbsoluteFolderPath, AnyFilePath, AnyPath, RelativeFilePath, RelativeFolderPath,
+};
 use crate::{all_paths, inner::PathInner, try_from};
-use crate::{PathError, Result};
 use either::Either;
 use serde::{Deserialize, Serialize};
 
@@ -19,29 +21,28 @@ impl AnyFolderPath {
         Ok(self)
     }
 
-    pub fn to_concrete(self) -> Either<AbsoluteFolderPath, RelativeFolderPath> {
+    pub fn to_concrete(&self) -> Either<AbsoluteFolderPath, RelativeFolderPath> {
         match self.0.is_absolute() {
-            true => Either::Left(AbsoluteFolderPath(self.0)),
-            false => Either::Right(RelativeFolderPath(self.0)),
+            true => Either::Left(AbsoluteFolderPath(self.0.clone())),
+            false => Either::Right(RelativeFolderPath(self.0.clone())),
         }
     }
 
     /// Converts an AnyFolderPath to AbsoluteFolderPath. If the path is already
     /// absolute then it is used otherwise it is appended to the root.
-    pub fn to_absolute(self, root: &AbsoluteFolderPath) -> AbsoluteFolderPath {
+    pub fn to_absolute(&self, root: &AbsoluteFolderPath) -> AbsoluteFolderPath {
         match self.0.is_absolute() {
-            true => AbsoluteFolderPath(self.0),
-            false => root.with_folder(&RelativeFolderPath(self.0)),
+            true => AbsoluteFolderPath(self.0.clone()),
+            false => root.with_folder(&RelativeFolderPath(self.0.clone())),
         }
     }
 
-    pub fn with_file<F>(&self, file: F) -> Result<AnyFilePath>
-    where
-        F: TryInto<AnyFilePath, Error = PathError>,
-    {
-        let file: AnyFilePath = file.try_into()?;
-        let path = self.0.path.clone() + file.as_str();
-        path.try_into()
+    pub fn with_file(&self, file: &RelativeFilePath) -> AnyFilePath {
+        AnyFilePath(self.0.with_path_appended(file.as_str()))
+    }
+
+    pub fn with_folder(&self, folder: &RelativeFolderPath) -> Self {
+        Self(self.0.with_path_appended(folder.as_str()))
     }
 }
 

@@ -62,6 +62,13 @@ macro_rules! all_paths {
                 }
             }
         }
+        impl std::cmp::Eq for $struct {}
+
+        impl std::cmp::PartialEq<$struct> for $struct {
+            fn eq(&self, other: &$struct) -> bool {
+                self.as_str().eq(other.as_str())
+            }
+        }
 
         impl std::cmp::PartialEq<$struct> for &str {
             fn eq(&self, other: &$struct) -> bool {
@@ -69,6 +76,24 @@ macro_rules! all_paths {
                     Ok(me) => other.0.eq(&me.0),
                     Err(_) => false,
                 }
+            }
+        }
+
+        impl std::cmp::PartialOrd for $struct {
+            fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+                Some(self.cmp(other))
+            }
+        }
+
+        impl std::cmp::Ord for $struct {
+            fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+                self.as_str().cmp(other.as_str())
+            }
+        }
+
+        impl std::hash::Hash for $struct {
+            fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+                self.as_str().hash(state);
             }
         }
     };

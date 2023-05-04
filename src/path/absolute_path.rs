@@ -1,6 +1,6 @@
 use crate::os::CurrentOS;
 use crate::{all_paths, inner::PathInner, serde_exist, serde_expanded, try_exist, try_from};
-use crate::{ensure, AnyPath, Result};
+use crate::{ensure, AnyPath, RelativePath, Result};
 use crate::{AbsoluteFilePath, AbsoluteFolderPath};
 use either::Either;
 use serde::{Deserialize, Serialize};
@@ -30,15 +30,19 @@ impl AbsolutePath {
         self.0.as_path().exists()
     }
 
-    pub fn to_concrete(self) -> Either<AbsoluteFolderPath, AbsoluteFilePath> {
+    pub fn to_concrete(&self) -> Either<AbsoluteFolderPath, AbsoluteFilePath> {
         match self.0.is_folder() {
-            true => Either::Left(AbsoluteFolderPath(self.0)),
-            false => Either::Right(AbsoluteFilePath(self.0)),
+            true => Either::Left(AbsoluteFolderPath(self.0.clone())),
+            false => Either::Right(AbsoluteFilePath(self.0.clone())),
         }
     }
 
-    pub fn to_any(self) -> AnyPath {
-        AnyPath(self.0)
+    pub fn to_any(&self) -> AnyPath {
+        AnyPath(self.0.clone())
+    }
+
+    pub fn removing_root(&self, root: &AbsoluteFolderPath) -> Result<RelativePath> {
+        self.0.removing_root(&root.0.path).map(RelativePath)
     }
 }
 
@@ -71,6 +75,10 @@ fn test_convert_to_concrete() {
     let p: AbsolutePath = "/dir1/file".try_into().unwrap();
     let abs_file = p.to_concrete().unwrap_right();
     assert_eq!(format!("{abs_file:?}"), "AbsoluteFilePath(/dir1/file)");
+
+    let p: AbsolutePath = "/dir1/dir2/".try_into().unwrap();
+    let rel_fold = p.removing_root(&"/dir1/".try_into().unwrap());
+    assert_eq!(format!("{rel_fold:?}"), "Ok(RelativePath(dir2/))");
 }
 
 #[test]

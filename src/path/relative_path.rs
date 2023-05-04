@@ -18,15 +18,15 @@ impl RelativePath {
         Ok(self)
     }
 
-    pub fn to_concrete(self) -> Either<RelativeFolderPath, RelativeFilePath> {
+    pub fn to_concrete(&self) -> Either<RelativeFolderPath, RelativeFilePath> {
         match self.0.is_folder() {
-            true => Either::Left(RelativeFolderPath(self.0)),
-            false => Either::Right(RelativeFilePath(self.0)),
+            true => Either::Left(RelativeFolderPath(self.0.clone())),
+            false => Either::Right(RelativeFilePath(self.0.clone())),
         }
     }
 
-    pub fn to_any(self) -> AnyPath {
-        AnyPath(self.0)
+    pub fn to_any(&self) -> AnyPath {
+        AnyPath(self.0.clone())
     }
 }
 

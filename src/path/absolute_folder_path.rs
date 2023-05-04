@@ -4,7 +4,7 @@ use crate::{all_paths, inner::PathInner, serde_exist, serde_expanded, try_exist,
 use crate::{ensure, Result};
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct AbsoluteFolderPath(pub(crate) PathInner<CurrentOS>);
 
@@ -33,7 +33,7 @@ impl AbsoluteFolderPath {
         p.exists() && p.is_dir()
     }
 
-    pub fn removing_root(&self, root: &AbsoluteFolderPath) -> Option<RelativeFolderPath> {
+    pub fn removing_root(&self, root: &AbsoluteFolderPath) -> Result<RelativeFolderPath> {
         self.0.removing_root(&root.0.path).map(RelativeFolderPath)
     }
 
@@ -59,8 +59,8 @@ impl AbsoluteFolderPath {
         Self(self.0.with_path_appended(folder.as_str()))
     }
 
-    pub fn to_absolute(self) -> AbsolutePath {
-        self.into()
+    pub fn to_absolute(&self) -> AbsolutePath {
+        self.clone().into()
     }
 }
 
