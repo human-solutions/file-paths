@@ -263,7 +263,7 @@ impl<OS: OsGroup> PathInner<OS> {
         }
     }
 
-    pub(crate) fn remove_root(&self, root: &str) -> Option<Self> {
+    pub(crate) fn removing_root(&self, root: &str) -> Option<Self> {
         self.path.strip_prefix(root).map(|s| self.with_path(s))
     }
 

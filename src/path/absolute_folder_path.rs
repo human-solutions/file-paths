@@ -33,8 +33,8 @@ impl AbsoluteFolderPath {
         p.exists() && p.is_dir()
     }
 
-    pub fn removing_root(&self, root: AbsoluteFolderPath) -> Option<RelativeFolderPath> {
-        self.0.remove_root(&root.0.path).map(RelativeFolderPath)
+    pub fn removing_root(&self, root: &AbsoluteFolderPath) -> Option<RelativeFolderPath> {
+        self.0.removing_root(&root.0.path).map(RelativeFolderPath)
     }
 
     /// Convert this [AbsoluteFolderPath] to an [AbsoluteFilePath] by providing a [RelativeFilePath].
@@ -62,4 +62,20 @@ impl AbsoluteFolderPath {
     pub fn to_absolute(self) -> AbsolutePath {
         self.into()
     }
+}
+
+#[test]
+fn test_convert_to_abstract() {
+    let p: AbsoluteFolderPath = "/dir1/dir2/".try_into().unwrap();
+
+    let abs_path = p.to_absolute();
+    assert_eq!(format!("{abs_path:?}"), "AbsolutePath(/dir1/dir2/)");
+}
+
+#[test]
+fn test_convert_to_concrete() {
+    let p: AbsoluteFolderPath = "/dir1/dir2/".try_into().unwrap();
+
+    let rel_file = p.removing_root(&"/dir1/".try_into().unwrap()).unwrap();
+    assert_eq!(format!("{rel_file:?}"), "RelativeFolderPath(dir2/)");
 }

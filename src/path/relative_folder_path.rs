@@ -1,7 +1,7 @@
 use crate::os::CurrentOS;
+use crate::Result;
 use crate::{all_dirs, AbsoluteFolderPath, RelativeFilePath, RelativePath};
 use crate::{all_paths, inner::PathInner, try_from};
-use crate::{PathError, Result};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -19,16 +19,11 @@ impl RelativeFolderPath {
         Ok(self)
     }
 
-    pub fn with_root<P>(&self, root: P) -> Result<AbsoluteFolderPath>
-    where
-        P: TryInto<AbsoluteFolderPath, Error = PathError>,
-    {
-        let root: AbsoluteFolderPath = root.try_into()?;
-        let path = self.0.path.clone() + &root.0.path;
-        path.try_into()
+    pub fn with_root(&self, root: &AbsoluteFolderPath) -> AbsoluteFolderPath {
+        root.clone().with_folder(self)
     }
 
-    pub fn with_file(&self, file: RelativeFilePath) -> RelativeFilePath {
+    pub fn with_file(&self, file: &RelativeFilePath) -> RelativeFilePath {
         RelativeFilePath(self.0.with_path_appended(file.as_str()))
     }
 
@@ -39,4 +34,26 @@ impl RelativeFolderPath {
     pub fn to_relative(self) -> RelativePath {
         RelativePath(self.0)
     }
+}
+
+#[test]
+fn test_convert_to_abstract() {
+    let p: RelativeFolderPath = "dir1/dir2/".try_into().unwrap();
+
+    let abs_path = p.to_relative();
+    assert_eq!(format!("{abs_path:?}"), "RelativePath(dir1/dir2/)");
+}
+
+#[test]
+fn test_convert_to_concrete() {
+    let p: RelativeFolderPath = "dir/".try_into().unwrap();
+
+    let abs_folder = p.with_root(&"/root/".try_into().unwrap());
+    assert_eq!(format!("{abs_folder:?}"), "AbsoluteFolderPath(/root/dir/)");
+
+    let rel_file = p.with_file(&"file".try_into().unwrap());
+    assert_eq!(format!("{rel_file:?}"), "RelativeFilePath(dir/file)");
+
+    let rel_folder = p.with_folder(&"fold/".try_into().unwrap());
+    assert_eq!(format!("{rel_folder:?}"), "RelativeFolderPath(dir/fold/)");
 }

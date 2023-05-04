@@ -17,6 +17,7 @@ pub struct AnyPath(pub(crate) PathInner<CurrentOS>);
 all_paths!(AnyPath);
 try_from!(AnyPath);
 
+#[derive(Debug)]
 pub enum ConcretePath {
     AbsFolder(AbsoluteFolderPath),
     RelFolder(RelativeFolderPath),
@@ -124,4 +125,30 @@ impl From<AnyFilePath> for AnyPath {
     fn from(value: AnyFilePath) -> Self {
         Self(value.0)
     }
+}
+
+#[test]
+fn test_convert_to_concrete() {
+    let p: AnyPath = "/dir/file".try_into().unwrap();
+    assert_eq!(
+        format!("{:?}", p.to_concrete()),
+        "AbsFile(AbsoluteFilePath(/dir/file))"
+    );
+
+    let p: AnyPath = "dir/file".try_into().unwrap();
+    assert_eq!(
+        format!("{:?}", p.to_concrete()),
+        "RelFile(RelativeFilePath(dir/file))"
+    );
+
+    let p: AnyPath = "dir/".try_into().unwrap();
+    assert_eq!(
+        format!("{:?}", p.to_concrete()),
+        "RelFolder(RelativeFolderPath(dir/))"
+    );
+    let p: AnyPath = "/dir/".try_into().unwrap();
+    assert_eq!(
+        format!("{:?}", p.to_concrete()),
+        "AbsFolder(AbsoluteFolderPath(/dir/))"
+    );
 }

@@ -21,6 +21,10 @@ macro_rules! all_paths {
             pub fn ends_with<S: AsRef<str>>(&self, value: S) -> bool {
                 self.as_str().ends_with(value.as_ref())
             }
+
+            pub fn contains<S: AsRef<str>>(&self, value: S) -> bool {
+                self.as_str().contains(value.as_ref())
+            }
         }
 
         impl std::convert::AsRef<std::path::Path> for $struct {
