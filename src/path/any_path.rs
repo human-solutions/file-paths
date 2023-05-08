@@ -130,25 +130,13 @@ impl From<AnyFilePath> for AnyPath {
 #[test]
 fn test_convert_to_concrete() {
     let p: AnyPath = "/dir/file".try_into().unwrap();
-    assert_eq!(
-        format!("{:?}", p.to_concrete()),
-        "AbsFile(AbsoluteFilePath(/dir/file))"
-    );
+    assert_eq!(format!("{:?}", p.to_concrete()), "AbsFile(/dir/file)");
 
     let p: AnyPath = "dir/file".try_into().unwrap();
-    assert_eq!(
-        format!("{:?}", p.to_concrete()),
-        "RelFile(RelativeFilePath(dir/file))"
-    );
+    assert_eq!(format!("{:?}", p.to_concrete()), "RelFile(dir/file)");
 
     let p: AnyPath = "dir/".try_into().unwrap();
-    assert_eq!(
-        format!("{:?}", p.to_concrete()),
-        "RelFolder(RelativeFolderPath(dir/))"
-    );
+    assert_eq!(format!("{:?}", p.to_concrete()), "RelFolder(dir/)");
     let p: AnyPath = "/dir/".try_into().unwrap();
-    assert_eq!(
-        format!("{:?}", p.to_concrete()),
-        "AbsFolder(AbsoluteFolderPath(/dir/))"
-    );
+    assert_eq!(format!("{:?}", p.to_concrete()), "AbsFolder(/dir/)");
 }

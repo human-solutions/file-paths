@@ -49,7 +49,7 @@ macro_rules! all_paths {
                 if f.alternate() {
                     write!(f, "{}({:#?})", stringify!($struct), self.0)
                 } else {
-                    write!(f, "{}({:?})", stringify!($struct), self.0)
+                    write!(f, "{:?}", self.0)
                 }
             }
         }

@@ -137,13 +137,13 @@ fn test_debug() {
     let p1 = PathInner::<LinTestOS>::new("./dir/hi").unwrap();
 
     assert_eq!(format!("{p1:?}"), "./dir/hi");
-    assert_eq!(format!("{p1:#?}"), "/var/test/dir/hi");
+    assert_eq!(format!("{p1:#?}"), "./dir/hi");
 
     let p1 = PathInner::<WinTestOS>::new(".\\dir\\hi").unwrap();
 
     assert_eq!(p1.path, "C:\\current\\dir\\hi");
     assert_eq!(format!("{p1:?}"), "./dir/hi");
-    assert_eq!(format!("{p1:#?}"), "/current/dir/hi");
+    assert_eq!(format!("{p1:#?}"), "./dir/hi");
 }
 
 #[test]

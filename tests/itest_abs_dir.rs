@@ -21,7 +21,7 @@ fn itest_abs_dir() {
     let segs = p.segments().collect::<Vec<_>>();
 
     assert_eq!(segs, vec!["dir1", "dir2"]);
-    assert_eq!(format!("{p:?}"), "AbsoluteFolderPath(/dir1/dir2/)");
+    assert_eq!(format!("{p:#?}"), "AbsoluteFolderPath(/dir1/dir2/)");
 
     assert!(!p.exists());
 

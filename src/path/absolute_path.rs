@@ -63,22 +63,22 @@ fn test_convert_to_abstract() {
     let p: AbsolutePath = "/dir1/dir2/".try_into().unwrap();
 
     let any_path = p.to_any();
-    assert_eq!(format!("{any_path:?}"), "AnyPath(/dir1/dir2/)");
+    assert_eq!(format!("{any_path:#?}"), "AnyPath(/dir1/dir2/)");
 }
 
 #[test]
 fn test_convert_to_concrete() {
     let p: AbsolutePath = "/dir1/dir2/".try_into().unwrap();
     let abs_fold = p.to_concrete().unwrap_left();
-    assert_eq!(format!("{abs_fold:?}"), "AbsoluteFolderPath(/dir1/dir2/)");
+    assert_eq!(format!("{abs_fold:#?}"), "AbsoluteFolderPath(/dir1/dir2/)");
 
     let p: AbsolutePath = "/dir1/file".try_into().unwrap();
     let abs_file = p.to_concrete().unwrap_right();
-    assert_eq!(format!("{abs_file:?}"), "AbsoluteFilePath(/dir1/file)");
+    assert_eq!(format!("{abs_file:#?}"), "AbsoluteFilePath(/dir1/file)");
 
     let p: AbsolutePath = "/dir1/dir2/".try_into().unwrap();
     let rel_fold = p.removing_root(&"/dir1/".try_into().unwrap());
-    assert_eq!(format!("{rel_fold:?}"), "Ok(RelativePath(dir2/))");
+    assert_eq!(format!("{rel_fold:?}"), "Ok(dir2/)");
 }
 
 #[test]

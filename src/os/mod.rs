@@ -60,8 +60,8 @@ pub(crate) trait OsGroup {
         }
     }
 
-    fn as_contracted(path: &str, do_contract: bool) -> (Option<char>, &str) {
-        if do_contract && Self::is_absolute(path) {
+    fn as_contracted(path: &str) -> (Option<char>, &str) {
+        if Self::is_absolute(path) {
             match Self::contract(path) {
                 Ok(s) => s,
                 Err(_) => (None, path),
@@ -71,7 +71,7 @@ pub(crate) trait OsGroup {
         }
     }
     fn debug_fmt(path: &str, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let (chr, path) = Self::as_contracted(path, !f.alternate());
+        let (chr, path) = Self::as_contracted(path);
 
         let path = drive::remove_win_drive(path).replace('\\', "/");
         if let Some(chr) = chr {

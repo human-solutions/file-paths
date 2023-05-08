@@ -1,5 +1,7 @@
 use crate::os::CurrentOS;
-use crate::{all_dirs, AbsoluteFilePath, AbsolutePath, RelativeFilePath, RelativeFolderPath};
+use crate::{
+    all_dirs, AbsoluteFilePath, AbsolutePath, RelativeFilePath, RelativeFolderPath, SLASH,
+};
 use crate::{all_paths, inner::PathInner, serde_exist, serde_expanded, try_exist, try_from};
 use crate::{ensure, Result};
 use serde::{Deserialize, Serialize};
@@ -62,6 +64,20 @@ impl AbsoluteFolderPath {
     pub fn to_absolute(&self) -> AbsolutePath {
         self.clone().into()
     }
+
+    /// Try to create an AbsoluteFolderPath from a path that is known
+    /// to be a folder. If the provided path
+    /// doesn't end with a slash then one is appended, to the contrary
+    /// the other ways to create an AbsoluteFolderPath which would
+    /// fail.
+    pub fn try_from_folder<S: AsRef<str>>(path: S) -> Result<Self> {
+        let mut me = PathInner::new(path.as_ref())?;
+        me.ensure_absolute()?;
+        if !me.path.ends_with(SLASH) {
+            me.path.push(me.sep());
+        }
+        Ok(Self(me))
+    }
 }
 
 #[test]
@@ -69,7 +85,7 @@ fn test_convert_to_abstract() {
     let p: AbsoluteFolderPath = "/dir1/dir2/".try_into().unwrap();
 
     let abs_path = p.to_absolute();
-    assert_eq!(format!("{abs_path:?}"), "AbsolutePath(/dir1/dir2/)");
+    assert_eq!(format!("{abs_path:#?}"), "AbsolutePath(/dir1/dir2/)");
 }
 
 #[test]
@@ -77,5 +93,5 @@ fn test_convert_to_concrete() {
     let p: AbsoluteFolderPath = "/dir1/dir2/".try_into().unwrap();
 
     let rel_file = p.removing_root(&"/dir1/".try_into().unwrap()).unwrap();
-    assert_eq!(format!("{rel_file:?}"), "RelativeFolderPath(dir2/)");
+    assert_eq!(format!("{rel_file:#?}"), "RelativeFolderPath(dir2/)");
 }

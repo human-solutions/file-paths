@@ -52,28 +52,28 @@
 //! #[test]
 //! fn test() -> crate::Result<()> {
 //!     // imagine that the path string is read from a conf.toml file:
-//!     let dir = AbsoluteFolderPath::new(r"~/dir1//..\dir2");
+//!     let dir = AbsoluteFolderPath::new(r"~/dir1//..\dir2/");
 //!     
 //!     //////// Display ////////
 //!
 //!     #[cfg(not(windows))]
-//!     assert_eq!(format!("{dir}"), "~/dir2");
+//!     assert_eq!(format!("{dir}"), "~/dir2/");
 //!     #[cfg(windows)]
-//!     assert_eq!(format!("{dir}"), r"~\dir2");
+//!     assert_eq!(format!("{dir}"), r"~\dir2\");
 //!
 //!     // using alternate
 //!     #[cfg(not(windows))]
-//!     assert_eq!(format!("{dir:#}"), "/home/user/dir2");
+//!     assert_eq!(format!("{dir:#}"), "/home/user/dir2/");
 //!     #[cfg(windows)]
-//!     assert_eq!(format!("{dir:#}"), r"C:\Users\user\dir2");
+//!     assert_eq!(format!("{dir:#}"), r"C:\Users\user\dir2\");
 //!
 //!     //////// Debug ////////
 //!     
 //!     // using standard Debug
-//!     assert_eq!(format!("{dir:?}"), r#"AbsoluteFolderPath("~/dir2")"#);
+//!     assert_eq!(format!("{dir:?}"), r#"~/dir2/"#);
 //!
 //!     // using alternative Debug
-//!     assert_eq!(format!("{dir:#?}", r#"AbsoluteFolderPath("/home/user/dir2")"#))
+//!     assert_eq!(format!("{dir:#?}", r#"AbsoluteFolderPath("~/dir2/")"#))
 //! }
 //! ```
 //!

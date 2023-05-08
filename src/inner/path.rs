@@ -41,6 +41,10 @@ impl<OS: OsGroup> PathInner<OS> {
         }
     }
 
+    pub(crate) fn sep(&self) -> char {
+        OS::SEP
+    }
+
     pub(crate) fn new<P: PathValues>(path: P) -> Result<Self> {
         let path = path.values()?.join(OS::SEP_STR);
         let mut inner = PathInner::empty();

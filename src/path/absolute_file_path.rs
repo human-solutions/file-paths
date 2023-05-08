@@ -63,10 +63,10 @@ fn test_convert_to_abstract() {
     let p: AbsoluteFilePath = "/dir/file.txt".try_into().unwrap();
 
     let abs_path = p.to_absolute();
-    assert_eq!(format!("{abs_path:?}"), "AbsolutePath(/dir/file.txt)");
+    assert_eq!(format!("{abs_path:#?}"), "AbsolutePath(/dir/file.txt)");
 
     let abs_path = p.to_any_file();
-    assert_eq!(format!("{abs_path:?}"), "AnyFilePath(/dir/file.txt)");
+    assert_eq!(format!("{abs_path:#?}"), "AnyFilePath(/dir/file.txt)");
 }
 
 #[test]
@@ -74,15 +74,15 @@ fn test_convert_to_concrete() {
     let p: AbsoluteFilePath = "/dir/file.txt".try_into().unwrap();
 
     let rel_file = p.removing_root(&"/dir/".try_into().unwrap()).unwrap();
-    assert_eq!(format!("{rel_file:?}"), "RelativeFilePath(file.txt)");
+    assert_eq!(format!("{rel_file:#?}"), "RelativeFilePath(file.txt)");
 
     let root: AbsoluteFolderPath = "/dir/".try_into().unwrap();
     let rel_file = p.removing_root(&root).unwrap();
-    assert_eq!(format!("{rel_file:?}"), "RelativeFilePath(file.txt)");
+    assert_eq!(format!("{rel_file:#?}"), "RelativeFilePath(file.txt)");
 
     let rel_file = p.removing_root(&root).unwrap();
-    assert_eq!(format!("{rel_file:?}"), "RelativeFilePath(file.txt)");
+    assert_eq!(format!("{rel_file:#?}"), "RelativeFilePath(file.txt)");
 
     let abs_fold = p.dropping_file();
-    assert_eq!(format!("{abs_fold:?}"), "AbsoluteFolderPath(/dir/)");
+    assert_eq!(format!("{abs_fold:#?}"), "AbsoluteFolderPath(/dir/)");
 }
