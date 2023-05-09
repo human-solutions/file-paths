@@ -48,6 +48,7 @@ pub(crate) trait OsGroup {
             (None, None) => (None, path),
         })
     }
+
     fn remove_abs_start<'a>(path: &'a str, start: &str) -> Option<&'a str> {
         if path.starts_with(start) {
             let mut pos = start.len();
@@ -70,14 +71,17 @@ pub(crate) trait OsGroup {
             (None, path)
         }
     }
-    fn debug_fmt(path: &str, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let (chr, path) = Self::as_contracted(path);
 
-        let path = drive::remove_win_drive(path).replace('\\', "/");
+    fn debug_string(path: &str) -> String {
+        let (chr, contracted) = Self::as_contracted(path);
+
+        let mut path = String::with_capacity(contracted.len() + 1);
         if let Some(chr) = chr {
-            write!(f, "{chr}/")?;
+            path.push(chr);
+            path.push('/');
         }
-        write!(f, "{path}")
+        path.push_str(&drive::remove_win_drive(contracted).replace('\\', "/"));
+        path
     }
 }
 

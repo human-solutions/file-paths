@@ -1,4 +1,3 @@
-///
 #[macro_export]
 macro_rules! serde_exist {
     ($struct:ident) => {
@@ -10,7 +9,7 @@ macro_rules! serde_exist {
                 path: &super::$struct,
                 ser: S,
             ) -> Result<S::Ok, S::Error> {
-                ser.serialize_str(&format!("{:?}", path.0))
+                ser.serialize_str(&path.0.debug_string())
             }
 
             pub fn deserialize<'de, D: Deserializer<'de>>(
@@ -46,3 +45,29 @@ macro_rules! serde_expanded {
         }
     };
 }
+
+#[macro_export]
+macro_rules! serde_impl {
+    ($struct:ident) => {
+        impl serde::Serialize for $struct {
+            fn serialize<S: serde::Serializer>(
+                &self,
+                ser: S,
+            ) -> std::result::Result<S::Ok, S::Error> {
+                ser.serialize_str(&self.0.debug_string())
+            }
+        }
+
+        impl<'de> serde::Deserialize<'de> for $struct {
+            fn deserialize<D: serde::Deserializer<'de>>(
+                des: D,
+            ) -> std::result::Result<Self, D::Error> {
+                let path = String::deserialize(des)?;
+                $struct::try_from(path).map_err(serde::de::Error::custom)
+            }
+        }
+    };
+}
+
+#[test]
+fn test_serde() {}

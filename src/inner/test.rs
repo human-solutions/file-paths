@@ -280,3 +280,11 @@ fn test_pop() {
     assert_eq!(format!("{:?}", p.popping(3)), "");
     assert_eq!(format!("{}", p.popping(4)), "C:");
 }
+
+#[test]
+fn test_join() {
+    let p = PathInner::<LinTestOS>::new("/dir1/").unwrap();
+
+    let j = p.joining(vec!["dir2", "dir3/"]).unwrap();
+    assert_eq!(format!("{j:?}"), "/dir1/dir2/dir3/");
+}

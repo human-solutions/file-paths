@@ -2,18 +2,19 @@ use crate::os::CurrentOS;
 use crate::{
     all_dirs, AbsoluteFilePath, AbsolutePath, RelativeFilePath, RelativeFolderPath, SLASH,
 };
-use crate::{all_paths, inner::PathInner, serde_exist, serde_expanded, try_exist, try_from};
+use crate::{
+    all_paths, inner::PathInner, serde_exist, serde_expanded, serde_impl, try_exist, try_from,
+};
 use crate::{ensure, Result};
-use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Serialize, Deserialize)]
-#[serde(transparent)]
+#[derive(Clone)]
 pub struct AbsoluteFolderPath(pub(crate) PathInner<CurrentOS>);
 
 all_paths!(AbsoluteFolderPath);
 all_dirs!(AbsoluteFolderPath);
 try_from!(AbsoluteFolderPath);
 try_exist!(AbsoluteFolderPath);
+serde_impl!(AbsoluteFolderPath);
 serde_exist!(AbsoluteFolderPath);
 serde_expanded!(AbsoluteFolderPath);
 
@@ -94,4 +95,12 @@ fn test_convert_to_concrete() {
 
     let rel_file = p.removing_root(&"/dir1/".try_into().unwrap()).unwrap();
     assert_eq!(format!("{rel_file:#?}"), "RelativeFolderPath(dir2/)");
+}
+
+#[test]
+fn test_with_folder() {
+    let p: AbsoluteFolderPath = "/dir1/".try_into().unwrap();
+
+    let f = p.with_folder(&"dir2/".try_into().unwrap());
+    assert_eq!(format!("{f:#?}"), "AbsoluteFolderPath(/dir1/dir2/)");
 }

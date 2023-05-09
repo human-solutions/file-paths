@@ -1,16 +1,15 @@
 use crate::os::CurrentOS;
 use crate::{all_paths, inner::PathInner, try_from};
-use crate::{AnyPath, Result};
+use crate::{serde_impl, AnyPath, Result};
 use crate::{RelativeFilePath, RelativeFolderPath};
 use either::Either;
-use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Serialize, Deserialize)]
-#[serde(transparent)]
+#[derive(Clone)]
 pub struct RelativePath(pub(crate) PathInner<CurrentOS>);
 
 all_paths!(RelativePath);
 try_from!(RelativePath);
+serde_impl!(RelativePath);
 
 impl RelativePath {
     pub(crate) fn validate(self) -> Result<Self> {

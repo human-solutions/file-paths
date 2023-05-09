@@ -55,7 +55,9 @@ impl<OS: OsGroup> PathInner<OS> {
         if path.starts_with(SLASH) {
             inner.path.push(OS::SEP)
         }
-        inner.path.push_str(&str_segments(path)?.join(OS::SEP_STR));
+        inner
+            .path
+            .push_str(&str_segments(path.split(SLASH))?.join(OS::SEP_STR));
         if path.ends_with(SLASH) && !inner.path.ends_with(SLASH) {
             inner.path.push(OS::SEP)
         }
@@ -71,6 +73,10 @@ impl<OS: OsGroup> PathInner<OS> {
         } else {
             (None, self.path.as_str())
         }
+    }
+
+    pub(crate) fn debug_string(&self) -> String {
+        OS::debug_string(&self.path)
     }
 
     pub(crate) fn is_absolute(&self) -> bool {
@@ -128,11 +134,28 @@ impl<OS: OsGroup> PathInner<OS> {
     }
 
     pub(crate) fn join<P: PathValues>(&mut self, path: P) -> Result<()> {
+        let path_vals = path.values()?;
+        let is_absolute = self.is_absolute()
+            || path_vals
+                .last()
+                .map(|s| s.ends_with(OS::SEP))
+                .unwrap_or(false);
+        let path_segs = path_vals.into_iter().flat_map(|path| path.split(SLASH));
+
+        let join_path = str_segments(path_segs)?.join(OS::SEP_STR);
+        if join_path.is_empty() {
+            return Ok(());
+        }
+        let new_len = self.path.len() + join_path.len() + 1;
+        self.path.reserve_exact(new_len);
+
         if !self.path.ends_with(OS::SEP) {
             self.path.push(OS::SEP);
         }
-        for segment in path.values()? {
-            self.push_segment(segment)?;
+        self.path.push_str(&join_path);
+
+        if is_absolute {
+            self.path.push(OS::SEP);
         }
         Ok(())
     }
@@ -161,12 +184,6 @@ impl<OS: OsGroup> PathInner<OS> {
         }
         self.path.push('.');
         self.path.push_str(&extensions.str_vec().join("."))
-    }
-
-    pub(crate) fn push_segment(&mut self, segment: &str) -> Result<()> {
-        segment.assert_allowed_path_component()?;
-        self.path.push_str(segment);
-        Ok(())
     }
 
     pub(crate) fn pop(&mut self, count: usize) {
@@ -201,6 +218,9 @@ impl<OS: OsGroup> PathInner<OS> {
     pub(crate) fn set_file_name(&mut self, file_name: &str) -> Result<()> {
         file_name.assert_allowed_file_name()?;
         let file_start = self.file_name_start();
+        if !self.path.ends_with(OS::SEP) {
+            self.path.push(OS::SEP)
+        }
         self.path.truncate(file_start);
         self.path.push_str(file_name);
         Ok(())

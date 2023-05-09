@@ -27,7 +27,7 @@ impl<OS: OsGroup> Display for PathInner<OS> {
 
 impl<OS: OsGroup> Debug for PathInner<OS> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        OS::debug_fmt(&self.path, f)
+        write!(f, "{}", OS::debug_string(&self.path))
     }
 }
 

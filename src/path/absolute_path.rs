@@ -1,17 +1,16 @@
 use crate::os::CurrentOS;
 use crate::{all_paths, inner::PathInner, serde_exist, serde_expanded, try_exist, try_from};
-use crate::{ensure, AnyPath, RelativePath, Result};
+use crate::{ensure, serde_impl, AnyPath, RelativePath, Result};
 use crate::{AbsoluteFilePath, AbsoluteFolderPath};
 use either::Either;
-use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Serialize, Deserialize)]
-#[serde(transparent)]
+#[derive(Clone)]
 pub struct AbsolutePath(pub(crate) PathInner<CurrentOS>);
 
 all_paths!(AbsolutePath);
 try_from!(AbsolutePath);
 try_exist!(AbsolutePath);
+serde_impl!(AbsolutePath);
 serde_exist!(AbsolutePath);
 serde_expanded!(AbsolutePath);
 

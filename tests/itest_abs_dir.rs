@@ -35,10 +35,19 @@ fn itest_abs_dir() {
     assert!(err_str.starts_with("path is not absolute (it should start with a slash): "));
 }
 
+#[derive(Serialize)]
+struct SomeData {
+    path: AbsoluteFolderPath,
+}
+
 #[test]
 fn i_abs_dir_json() {
-    let p = AbsoluteFolderPath::try_from("/dir1/dir2/").unwrap();
-    assert_eq!(serde_json::to_string(&p).unwrap(), r#""/dir1/dir2/""#);
+    let path = AbsoluteFolderPath::try_from("/dir1/dir2/").unwrap();
+    let d = SomeData { path };
+    assert_eq!(
+        serde_json::to_string(&d).unwrap(),
+        r#"{"path":"/dir1/dir2/"}"#
+    );
 
     let exp_p = ExpandPathTest {
         path1: ".".try_into().unwrap(),
